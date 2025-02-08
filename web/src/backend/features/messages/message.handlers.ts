@@ -4,6 +4,7 @@ import { messageService } from './message.service';
 import { createMessageSchema } from '@/shared/validations/schemas';
 import { paginationSchema } from '@/shared/validations/common';
 import { broadcastToConversation } from '@/backend/server/socket/io';
+import { triggerAIAnalysis } from '@/backend/features/conversations/ai-analysis';
 
 type RouteContext = { params: Promise<Record<string, string>> };
 
@@ -54,6 +55,9 @@ export const POST = withAuth(async (req: AuthenticatedRequest, context: RouteCon
 
     // Broadcast to WebSocket clients (in-process, no HTTP call)
     broadcastToConversation(conversationId, 'new_message', message);
+
+    // Fire-and-forget AI re-analysis with updated conversation
+    triggerAIAnalysis(conversationId).catch(() => {});
 
     return apiCreated(message);
   } catch (error) {

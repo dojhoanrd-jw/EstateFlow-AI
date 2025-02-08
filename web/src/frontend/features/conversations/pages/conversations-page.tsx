@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ArrowLeft, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 import { useConversations, type ConversationFilters } from '../hooks/use-conversations';
@@ -45,14 +45,21 @@ export function ConversationsPage() {
   // Data hooks
   // ----------------------------------------
 
-  const { conversations, isLoading: isLoadingConversations } = useConversations(filters);
-  const { messages, isLoading: isLoadingMessages, isConnected, sendMessage } = useMessages(selectedConversationId);
+  const { conversations, isLoading: isLoadingConversations, mutate: mutateConversations } = useConversations(filters);
+  const { messages, isLoading: isLoadingMessages, isConnected, onAiUpdate, sendMessage } = useMessages(selectedConversationId);
 
   // Find the currently selected conversation object
   const selectedConversation = useMemo(
     () => conversations.find((c) => c.id === selectedConversationId) ?? null,
     [conversations, selectedConversationId],
   );
+
+  // Refresh conversation list when AI analysis completes
+  useEffect(() => {
+    onAiUpdate(() => {
+      mutateConversations();
+    });
+  }, [onAiUpdate, mutateConversations]);
 
   // Typing indicator
   const { typingUsers, emitTyping } = useTypingIndicator(selectedConversationId);

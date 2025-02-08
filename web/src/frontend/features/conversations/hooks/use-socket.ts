@@ -41,6 +41,7 @@ export function useSocket(conversationId: string | null) {
   const socketRef = useRef<Socket | null>(null);
   const prevRoomRef = useRef<string | null>(null);
   const onMessageRef = useRef<((msg: MessageWithSender) => void) | null>(null);
+  const onAiUpdateRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!conversationId) {
@@ -75,15 +76,26 @@ export function useSocket(conversationId: string | null) {
     };
     socket.on('new_message', handleNewMessage);
 
+    // Listen for AI analysis updates
+    const handleAiUpdate = () => {
+      if (onAiUpdateRef.current) onAiUpdateRef.current();
+    };
+    socket.on('ai_update', handleAiUpdate);
+
     return () => {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
       socket.off('new_message', handleNewMessage);
+      socket.off('ai_update', handleAiUpdate);
     };
   }, [conversationId]);
 
   const onMessage = useCallback((handler: (msg: MessageWithSender) => void) => {
     onMessageRef.current = handler;
+  }, []);
+
+  const onAiUpdate = useCallback((handler: () => void) => {
+    onAiUpdateRef.current = handler;
   }, []);
 
   const sendTyping = useCallback(
@@ -99,7 +111,7 @@ export function useSocket(conversationId: string | null) {
     [conversationId],
   );
 
-  return { isConnected, onMessage, sendTyping };
+  return { isConnected, onMessage, onAiUpdate, sendTyping };
 }
 
 // ============================================

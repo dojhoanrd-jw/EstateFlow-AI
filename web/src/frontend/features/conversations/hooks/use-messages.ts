@@ -25,7 +25,7 @@ export function useMessages(conversationId: string | null) {
   );
 
   // Real WebSocket connection for live updates
-  const { isConnected, onMessage } = useSocket(conversationId);
+  const { isConnected, onMessage, onAiUpdate } = useSocket(conversationId);
 
   // Listen for new messages arriving via WebSocket
   useEffect(() => {
@@ -100,6 +100,7 @@ export function useMessages(conversationId: string | null) {
     isLoading,
     error,
     isConnected,
+    onAiUpdate,
     mutate,
     sendMessage,
   };

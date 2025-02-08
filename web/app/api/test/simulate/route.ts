@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/backend/server/db/client';
 import { broadcastToConversation } from '@/backend/server/socket/io';
+import { triggerAIAnalysis } from '@/backend/features/conversations/ai-analysis';
 
 const SQL_GET_LEAD_ID = `
   SELECT lead_id FROM conversations WHERE id = $1
@@ -75,6 +76,9 @@ export async function POST(req: Request) {
 
   // Broadcast via WebSocket
   broadcastToConversation(conversation_id, 'new_message', messageWithSender);
+
+  // Fire-and-forget AI re-analysis with updated conversation
+  triggerAIAnalysis(conversation_id).catch(() => {});
 
   return NextResponse.json({ ok: true, message: messageWithSender });
 }
