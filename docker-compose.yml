@@ -1,0 +1,54 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: estateflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-estateflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-estateflow_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-estateflow}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./web/src/backend/server/db/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-estateflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: estateflow-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-estateflow}:${POSTGRES_PASSWORD:-estateflow_secret}@db:5432/${POSTGRES_DB:-estateflow}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-super-secret-key-change-in-production}
+      AI_SERVICE_URL: http://ai:8000
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ai:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: estateflow-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-estateflow}:${POSTGRES_PASSWORD:-estateflow_secret}@db:5432/${POSTGRES_DB:-estateflow}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
