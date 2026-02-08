@@ -8,8 +8,10 @@ module can be imported safely even when the database is not yet available
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import contextmanager
+from functools import partial
 from typing import Any, Generator
 
 import psycopg2
@@ -95,3 +97,32 @@ def fetch_one(
             cur.execute(query, params)
             row = cur.fetchone()
             return dict(row) if row else None
+
+
+# ---------------------------------------------------------------------------
+# Async wrappers (run sync functions in a thread pool)
+# ---------------------------------------------------------------------------
+
+
+async def async_execute_query(
+    query: str, params: tuple[Any, ...] | None = None
+) -> None:
+    """Non-blocking version of :func:`execute_query`."""
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, partial(execute_query, query, params))
+
+
+async def async_fetch_all(
+    query: str, params: tuple[Any, ...] | None = None
+) -> list[dict[str, Any]]:
+    """Non-blocking version of :func:`fetch_all`."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, partial(fetch_all, query, params))
+
+
+async def async_fetch_one(
+    query: str, params: tuple[Any, ...] | None = None
+) -> dict[str, Any] | None:
+    """Non-blocking version of :func:`fetch_one`."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, partial(fetch_one, query, params))

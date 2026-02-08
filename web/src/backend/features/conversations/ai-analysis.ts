@@ -111,7 +111,7 @@ async function triggerAIAnalysis(conversationId: string): Promise<void> {
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const response = await fetch(`${AI_SERVICE_URL}/analyze`, {
+        const response = await fetch(`${AI_SERVICE_URL}/v1/analyze`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: payload,

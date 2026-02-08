@@ -5,12 +5,13 @@ from __future__ import annotations
 import json
 import logging
 import re
+from functools import lru_cache
 
 from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
+from langchain_core.runnables import Runnable
 
 from app.chains.prompts import TAGGER_PROMPT
-from app.config import settings
+from app.core.llm import get_llm
 
 logger = logging.getLogger(__name__)
 
@@ -67,13 +68,10 @@ def _parse_tags(raw: str) -> list[str]:
     return []
 
 
-def build_tagger_chain() -> object:
-    """Return an LCEL chain: prompt | llm | parser."""
-    llm = ChatOpenAI(
-        model=settings.OPENAI_MODEL,
-        api_key=settings.OPENAI_API_KEY,
-        temperature=0.0,
-    )
+@lru_cache(maxsize=1)
+def build_tagger_chain() -> Runnable:
+    """Return a cached LCEL chain: prompt | llm | parser."""
+    llm = get_llm(temperature=0.0)
     return TAGGER_PROMPT | llm | StrOutputParser()
 
 

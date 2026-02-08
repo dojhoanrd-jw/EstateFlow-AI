@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
-from app.models.database import fetch_one
+from app.core.llm import get_embeddings
+from app.core.security import verify_api_key
+from app.models.database import async_fetch_one
 from app.models.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
@@ -19,13 +21,17 @@ from app.services.analyzer import analyze_conversation
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 
 
-# ── POST /analyze ───────────────────────────────────────────────────────
+# ── POST /v1/analyze ──────────────────────────────────────────────────
 
 
-@router.post("/analyze", response_model=AnalyzeResponse)
+@router.post(
+    "/analyze",
+    response_model=AnalyzeResponse,
+    dependencies=[Depends(verify_api_key)],
+)
 async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
     """Analyse a sales conversation and return summary, tags and priority."""
     try:
@@ -39,10 +45,14 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-# ── POST /ingest ────────────────────────────────────────────────────────
+# ── POST /v1/ingest ───────────────────────────────────────────────────
 
 
-@router.post("/ingest", response_model=IngestResponse)
+@router.post(
+    "/ingest",
+    response_model=IngestResponse,
+    dependencies=[Depends(verify_api_key)],
+)
 async def ingest(request: IngestRequest) -> IngestResponse:
     """Ingest documents into the vector store for a given project."""
     try:
@@ -59,17 +69,37 @@ async def ingest(request: IngestRequest) -> IngestResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-# ── GET /health ─────────────────────────────────────────────────────────
+# ── GET /v1/health ────────────────────────────────────────────────────
 
 
 @router.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
-    """Return service health status and vector-store document count."""
+    """Return service health status with database and OpenAI connectivity."""
+    db_status = "ok"
+    openai_status = "ok"
+    doc_count = 0
+
+    # Database check
     try:
-        row = fetch_one("SELECT COUNT(*) AS cnt FROM project_embeddings")
+        row = await async_fetch_one("SELECT COUNT(*) AS cnt FROM project_embeddings")
         doc_count = row["cnt"] if row else 0
     except Exception:
-        logger.warning("Could not query vector store; reporting 0 docs.")
-        doc_count = 0
+        logger.warning("Health check: database unreachable.")
+        db_status = "unavailable"
 
-    return HealthResponse(status="ok", vector_store_docs=doc_count)
+    # OpenAI check
+    try:
+        client = get_embeddings()
+        client.embed_query("ping")
+    except Exception:
+        logger.warning("Health check: OpenAI API unreachable.")
+        openai_status = "unavailable"
+
+    overall = "ok" if db_status == "ok" and openai_status == "ok" else "degraded"
+
+    return HealthResponse(
+        status=overall,
+        database_status=db_status,
+        openai_status=openai_status,
+        vector_store_docs=doc_count,
+    )

@@ -6,7 +6,8 @@ Workflow
 2. Flatten each JSON into a human-readable text representation.
 3. Split into overlapping chunks with ``RecursiveCharacterTextSplitter``.
 4. Generate embeddings with OpenAI ``text-embedding-3-small``.
-5. INSERT chunks + embeddings into the ``project_embeddings`` table.
+5. INSERT chunks + embeddings into the ``project_embeddings`` table
+   inside a single transaction (all-or-nothing).
 """
 
 from __future__ import annotations
@@ -16,11 +17,11 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.config import settings
-from app.models.database import execute_query, fetch_one
+from app.core.llm import get_embeddings
+from app.models.database import fetch_one, get_connection
 
 logger = logging.getLogger(__name__)
 
@@ -57,13 +58,6 @@ def _flatten_json(data: dict[str, Any], prefix: str = "") -> str:
     return "\n".join(lines)
 
 
-def _get_embeddings_client() -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(
-        model=settings.EMBEDDING_MODEL,
-        api_key=settings.OPENAI_API_KEY,
-    )
-
-
 # ---------------------------------------------------------------------------
 # Core ingest
 # ---------------------------------------------------------------------------
@@ -75,6 +69,9 @@ def ingest_texts(
     metadatas: list[dict[str, Any]] | None = None,
 ) -> int:
     """Split *texts*, embed them, and store in ``project_embeddings``.
+
+    All inserts happen inside a single database transaction so that a
+    partial failure rolls back cleanly (idempotent ingest).
 
     Returns the number of chunks created.
     """
@@ -97,7 +94,7 @@ def ingest_texts(
         logger.warning("No chunks produced for project %s", project_name)
         return 0
 
-    embeddings_client = _get_embeddings_client()
+    embeddings_client = get_embeddings()
     vectors = embeddings_client.embed_documents(chunks)
 
     insert_sql = """
@@ -105,11 +102,14 @@ def ingest_texts(
         VALUES (%s, %s, %s::vector, %s)
     """
 
-    for chunk_text, vector, meta in zip(chunks, vectors, chunk_metas):
-        execute_query(
-            insert_sql,
-            (project_name, chunk_text, str(vector), json.dumps(meta)),
-        )
+    # Single transaction: all chunks succeed or none are persisted
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            for chunk_text, vector, meta in zip(chunks, vectors, chunk_metas):
+                cur.execute(
+                    insert_sql,
+                    (project_name, chunk_text, str(vector), json.dumps(meta)),
+                )
 
     logger.info(
         "Ingested %d chunks for project '%s'", len(chunks), project_name

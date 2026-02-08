@@ -81,6 +81,12 @@ class HealthResponse(BaseModel):
     """Result returned by the /health endpoint."""
 
     status: str = Field(default="ok")
+    database_status: str = Field(
+        default="ok", description="Database connectivity status."
+    )
+    openai_status: str = Field(
+        default="ok", description="OpenAI API connectivity status."
+    )
     vector_store_docs: int = Field(
-        ..., description="Total documents in the vector store."
+        default=0, description="Total documents in the vector store."
     )

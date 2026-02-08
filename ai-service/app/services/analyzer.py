@@ -14,7 +14,7 @@ from app.chains.priority import generate_priority
 from app.chains.summary import generate_summary
 from app.chains.tagger import generate_tags
 from app.models.schemas import AnalyzeResponse, MessageInput
-from app.rag.retriever import retrieve_relevant_chunks
+from app.rag.retriever import async_retrieve_relevant_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +59,8 @@ def _extract_project_mentions(messages: list[MessageInput]) -> list[str]:
     return list(found)
 
 
-def _build_rag_context(messages: list[MessageInput]) -> str:
-    """Retrieve relevant project info via RAG.
+async def _build_rag_context(messages: list[MessageInput]) -> str:
+    """Retrieve relevant project info via RAG (async).
 
     1. Detect which projects are mentioned.
     2. For each mentioned project, retrieve chunks filtered by project name.
@@ -72,7 +72,7 @@ def _build_rag_context(messages: list[MessageInput]) -> str:
 
     if projects:
         for project_name in projects:
-            project_chunks = retrieve_relevant_chunks(
+            project_chunks = await async_retrieve_relevant_chunks(
                 query=" ".join(m.content for m in messages[:5]),
                 top_k=3,
                 project_name=project_name,
@@ -81,7 +81,7 @@ def _build_rag_context(messages: list[MessageInput]) -> str:
     else:
         # Broad search using the conversation content
         query = " ".join(m.content for m in messages[:5])
-        chunks = retrieve_relevant_chunks(query=query, top_k=4)
+        chunks = await async_retrieve_relevant_chunks(query=query, top_k=4)
 
     if not chunks:
         return ""
@@ -109,8 +109,8 @@ async def analyze_conversation(
     """
     conversation_text = _format_conversation(messages)
 
-    # RAG retrieval (synchronous -- runs fast)
-    project_context = _build_rag_context(messages)
+    # RAG retrieval (async -- doesn't block event loop)
+    project_context = await _build_rag_context(messages)
 
     logger.info(
         "Analysing conversation %s (%d messages, %d chars of RAG context)",

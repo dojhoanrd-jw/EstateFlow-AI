@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import logging
+import time
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
-from app.models.database import fetch_one
+from app.config import settings
+from app.models.database import async_fetch_one
 from app.rag.ingest import ingest_all_project_files
 
 logging.basicConfig(
@@ -37,7 +39,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     logger.info("EstateFlow AI Service starting up...")
 
     try:
-        row = fetch_one("SELECT COUNT(*) AS cnt FROM project_embeddings")
+        row = await async_fetch_one("SELECT COUNT(*) AS cnt FROM project_embeddings")
         doc_count = row["cnt"] if row else 0
 
         if doc_count == 0:
@@ -55,7 +57,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         logger.warning(
             "Could not connect to the database during startup. "
             "RAG features will be unavailable until the database is reachable. "
-            "You can trigger ingestion later via POST /ingest.",
+            "You can trigger ingestion later via POST /v1/ingest.",
             exc_info=True,
         )
 
@@ -80,13 +82,41 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS -- allow everything during development
+# CORS -- restrict in production, allow everything in dev
+_origins: list[str] = (
+    [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+    if settings.CORS_ORIGINS
+    else ["*"]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------------------
+# Request logging middleware
+# ---------------------------------------------------------------------------
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next) -> Response:  # type: ignore[type-arg]
+    """Log every HTTP request with method, path, status and duration."""
+    start = time.perf_counter()
+    response: Response = await call_next(request)
+    duration_ms = (time.perf_counter() - start) * 1_000
+    logger.info(
+        "[request] %s %s -> %d (%.0fms)",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
+
 
 app.include_router(router)
