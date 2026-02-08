@@ -10,6 +10,7 @@ import type { SessionUser } from './auth.types';
 // ---------------------------------------------------------------------------
 
 const config: NextAuthConfig = {
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
