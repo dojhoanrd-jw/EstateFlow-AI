@@ -1,0 +1,94 @@
+{
+  "project_name": "Torre Alvarez",
+  "developer": "Grupo Inmobiliario Alvarez",
+  "type": "Departamentos verticales",
+  "location": {
+    "address": "Av. Paseo de la Reforma 2520, Col. Lomas de Chapultepec",
+    "city": "Ciudad de Mexico",
+    "state": "CDMX",
+    "zip": "11000",
+    "neighborhood": "Lomas de Chapultepec",
+    "nearby_landmarks": [
+      "Bosque de Chapultepec a 5 minutos",
+      "Auditorio Nacional a 10 minutos",
+      "Centro comercial Antara Fashion Hall a 8 minutos",
+      "Hospital ABC a 7 minutos"
+    ]
+  },
+  "description": "Torre Alvarez es un desarrollo vertical de 22 pisos con departamentos de lujo medio en una de las zonas mas exclusivas de la Ciudad de Mexico. Diseñado por el despacho de arquitectura Sordo Madaleno, combina acabados de primera calidad con espacios funcionales para profesionistas y familias jovenes. La torre cuenta con vista panoramica al Bosque de Chapultepec y acceso directo a Paseo de la Reforma.",
+  "construction_status": "En construccion - avance del 65%",
+  "delivery_date": "Diciembre 2026",
+  "total_units": 120,
+  "available_units": 34,
+  "floors": 22,
+  "unit_types": [
+    {
+      "type": "1 recamara",
+      "size_m2": 65,
+      "bathrooms": 1,
+      "parking_spots": 1,
+      "price_mxn": 4850000,
+      "monthly_hoa_mxn": 3800,
+      "description": "Ideal para profesionistas solteros o parejas. Incluye cocina integral, barra desayunadora y balcon con vista a la ciudad."
+    },
+    {
+      "type": "2 recamaras",
+      "size_m2": 95,
+      "bathrooms": 2,
+      "parking_spots": 1,
+      "price_mxn": 6900000,
+      "monthly_hoa_mxn": 5200,
+      "description": "Espacios amplios con recamara principal con vestidor y baño completo. Sala-comedor con doble altura y balcon."
+    },
+    {
+      "type": "3 recamaras",
+      "size_m2": 135,
+      "bathrooms": 2.5,
+      "parking_spots": 2,
+      "price_mxn": 9200000,
+      "monthly_hoa_mxn": 7100,
+      "description": "La opcion mas amplia con tres recamaras, cuarto de servicio, cocina con isla central y terraza de 15 m2."
+    }
+  ],
+  "amenities": [
+    "Alberca semiolimpica en rooftop",
+    "Gimnasio equipado con area de cardio y pesas",
+    "Salon de usos multiples",
+    "Area de coworking con internet de alta velocidad",
+    "Terraza con asadores y area de lounge",
+    "Lobby con concierge 24/7",
+    "Pet friendly con area para mascotas",
+    "Bodega individual incluida",
+    "Estacionamiento para visitas",
+    "Circuito cerrado de seguridad y acceso biometrico"
+  ],
+  "financing_options": [
+    {
+      "type": "Contado",
+      "description": "Pago de contado con 10% de descuento sobre precio de lista."
+    },
+    {
+      "type": "Plan de pagos directo con desarrollador",
+      "description": "30% de enganche diferido a 12 meses durante construccion, 70% restante al momento de la escrituracion. Sin intereses durante la etapa de construccion."
+    },
+    {
+      "type": "Credito bancario",
+      "description": "Pre-aprobacion con Banorte, HSBC y Scotiabank. Tasa fija desde 10.5% anual. Plazo hasta 20 años. Enganche minimo del 10%."
+    },
+    {
+      "type": "Credito Infonavit",
+      "description": "Compatible con credito Infonavit en esquema cofinanciamiento. Se requiere precalificacion vigente. Aplica para unidades de hasta $7,500,000 MXN."
+    }
+  ],
+  "special_promotions": [
+    "Meses sin intereses en el enganche con tarjeta participante",
+    "Cocina equipada de regalo en compras antes del 31 de marzo 2026",
+    "Descuento adicional del 3% para compradores que refieran a otro comprador"
+  ],
+  "contact": {
+    "sales_office": "Planta baja de Torre Alvarez, Av. Reforma 2520",
+    "phone": "+52 55 4123 8900",
+    "email": "ventas@torrealvarez.mx",
+    "office_hours": "Lunes a Sabado 9:00 - 19:00, Domingo 10:00 - 15:00"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "project_name": "Residencial del Parque",
+  "developer": "Desarrollos Habitat",
+  "type": "Casas y departamentos en conjunto residencial",
+  "location": {
+    "address": "Blvd. Adolfo Lopez Mateos 450, Fracc. Los Sauces",
+    "city": "Queretaro",
+    "state": "Queretaro",
+    "zip": "76120",
+    "neighborhood": "Juriquilla",
+    "nearby_landmarks": [
+      "Centro comercial Juriquilla a 5 minutos",
+      "Campus UNAM Juriquilla a 3 minutos",
+      "Hospital Moscati a 10 minutos",
+      "Parque Nacional El Cimatario a 20 minutos",
+      "Viñedos La Redonda a 30 minutos"
+    ]
+  },
+  "description": "Residencial del Parque es un desarrollo de uso mixto enfocado en familias, ubicado en la zona de mayor crecimiento de Queretaro. Ofrece casas de 2 y 3 pisos asi como departamentos en edificios de 5 niveles, todos rodeados de areas verdes, parques infantiles y ciclovias. El conjunto cuenta con escuela primaria y jardin de niños dentro del desarrollo, asi como locales comerciales en la entrada.",
+  "construction_status": "Etapa 2 en preventa - Etapa 1 entregada y habitada",
+  "delivery_date": "Agosto 2026 (Etapa 2)",
+  "total_units": 280,
+  "available_units": 95,
+  "sections": [
+    {
+      "section": "Casas Encino",
+      "units_available": 40
+    },
+    {
+      "section": "Casas Cedro",
+      "units_available": 25
+    },
+    {
+      "section": "Departamentos Arce",
+      "units_available": 30
+    }
+  ],
+  "unit_types": [
+    {
+      "type": "Casa Encino - 3 recamaras",
+      "size_m2": 110,
+      "lot_size_m2": 90,
+      "floors": 2,
+      "bathrooms": 2.5,
+      "parking_spots": 2,
+      "price_mxn": 2950000,
+      "monthly_hoa_mxn": 1800,
+      "description": "Casa de dos plantas con jardin trasero, 3 recamaras en planta alta, baño completo en recamara principal, medio baño en planta baja. Cocina integral con espacio para desayunador. Patio de servicio techado."
+    },
+    {
+      "type": "Casa Cedro - 4 recamaras",
+      "size_m2": 155,
+      "lot_size_m2": 120,
+      "floors": 3,
+      "bathrooms": 3.5,
+      "parking_spots": 2,
+      "price_mxn": 4200000,
+      "monthly_hoa_mxn": 2200,
+      "description": "La casa mas amplia del desarrollo. Tres plantas con family room en planta alta, 4 recamaras, cuarto de servicio independiente, jardin trasero con preparacion para asador y terraza en rooftop."
+    },
+    {
+      "type": "Departamento Arce - 2 recamaras",
+      "size_m2": 78,
+      "bathrooms": 1.5,
+      "parking_spots": 1,
+      "price_mxn": 1850000,
+      "monthly_hoa_mxn": 1400,
+      "description": "Departamento funcional ideal para parejas jovenes o familias pequeñas. Balcon con vista al parque central, cocina integral con barra y area de lavado independiente."
+    },
+    {
+      "type": "Departamento Arce - 3 recamaras",
+      "size_m2": 100,
+      "bathrooms": 2,
+      "parking_spots": 1,
+      "price_mxn": 2400000,
+      "monthly_hoa_mxn": 1650,
+      "description": "Departamento esquinero con doble iluminacion natural. Tres recamaras, dos baños completos y closets amplios. Cocina con isla y espacio para comedor de 6 personas."
+    }
+  ],
+  "amenities": [
+    "Parque central de 5,000 m2 con areas verdes",
+    "Alberca para adultos y chapoteadero infantil",
+    "Parque infantil con juegos de madera",
+    "Ciclopista perimetral de 1.2 km",
+    "Cancha de padel y cancha multiusos",
+    "Casa club con salon de eventos",
+    "Area de asadores comunitaria",
+    "Gimnasio al aire libre",
+    "Escuela primaria y jardin de niños (en convenio con SEP)",
+    "Locales comerciales (farmacia, minisuper, cafe)",
+    "Caseta de vigilancia 24/7 con control de acceso vehicular",
+    "Circuito cerrado de television en areas comunes"
+  ],
+  "financing_options": [
+    {
+      "type": "Contado",
+      "description": "Pago de contado con 8% de descuento sobre precio de lista."
+    },
+    {
+      "type": "Plan 70/30",
+      "description": "30% de enganche (puede diferirse hasta en 6 meses), 70% con credito hipotecario al momento de escriturar."
+    },
+    {
+      "type": "Credito Infonavit",
+      "description": "Todas las unidades son compatibles con Infonavit tradicional, Infonavit Total y cofinanciamiento Infonavit + bancario. El desarrollo esta registrado en RUV."
+    },
+    {
+      "type": "Credito Fovissste",
+      "description": "Compatible con credito Fovissste. Se aceptan creditos de la convocatoria vigente."
+    },
+    {
+      "type": "Credito bancario",
+      "description": "Convenios con Banorte, BBVA y Santander. Tasa preferencial desde 9.9% para compradores del desarrollo. Plazos de 15 a 20 años."
+    }
+  ],
+  "special_promotions": [
+    "Escrituras gratis en compras durante preventa de Etapa 2",
+    "Paquete de acabados premium sin costo adicional (piso porcelanato en toda la casa, llaves y accesorios de baño marca Helvex)",
+    "Meses sin intereses en el enganche con tarjetas Banamex y BBVA"
+  ],
+  "target_market": "Familias jovenes con hijos, profesionistas que buscan mudarse a Queretaro, compradores de primera vivienda con credito Infonavit o bancario.",
+  "contact": {
+    "sales_office": "Caseta de ventas en Blvd. Lopez Mateos 450, Juriquilla",
+    "phone": "+52 442 215 6700",
+    "email": "info@residencialdelparque.mx",
+    "office_hours": "Lunes a Domingo 9:00 - 18:00"
+  }
+}

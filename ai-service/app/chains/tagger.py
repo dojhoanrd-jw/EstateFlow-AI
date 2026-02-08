@@ -1,0 +1,105 @@
+"""LangChain chain for generating conversation tags."""
+
+from __future__ import annotations
+
+import json
+import logging
+import re
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+
+from app.chains.prompts import TAGGER_PROMPT
+from app.config import settings
+
+logger = logging.getLogger(__name__)
+
+VALID_TAGS: frozenset[str] = frozenset(
+    {
+        "hot-lead",
+        "cold-lead",
+        "pricing",
+        "financing",
+        "site-visit",
+        "follow-up",
+        "urgent",
+        "investor",
+        "first-home",
+        "family",
+        "premium",
+        "comparison",
+        "early-stage",
+        "infonavit",
+        "documentation",
+        "negotiation",
+    }
+)
+
+
+def _parse_tags(raw: str) -> list[str]:
+    """Robustly extract a JSON array of tags from LLM output.
+
+    The model *should* return a clean JSON array, but we handle edge cases
+    like markdown fences or trailing text just in case.
+    """
+    # Strip markdown code fences if present
+    cleaned = re.sub(r"```(?:json)?", "", raw).strip().strip("`")
+
+    # Attempt direct JSON parse
+    try:
+        parsed = json.loads(cleaned)
+        if isinstance(parsed, list):
+            return [t for t in parsed if isinstance(t, str) and t in VALID_TAGS]
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: find anything that looks like a JSON array in the text
+    match = re.search(r"\[.*?]", cleaned, re.DOTALL)
+    if match:
+        try:
+            parsed = json.loads(match.group())
+            if isinstance(parsed, list):
+                return [t for t in parsed if isinstance(t, str) and t in VALID_TAGS]
+        except json.JSONDecodeError:
+            pass
+
+    logger.warning("Could not parse tags from LLM output: %s", raw[:200])
+    return []
+
+
+def build_tagger_chain() -> object:
+    """Return an LCEL chain: prompt | llm | parser."""
+    llm = ChatOpenAI(
+        model=settings.OPENAI_MODEL,
+        api_key=settings.OPENAI_API_KEY,
+        temperature=0.0,
+    )
+    return TAGGER_PROMPT | llm | StrOutputParser()
+
+
+async def generate_tags(
+    conversation_text: str,
+    project_context: str = "",
+) -> list[str]:
+    """Invoke the tagger chain and return validated tags.
+
+    Parameters
+    ----------
+    conversation_text:
+        The formatted conversation transcript.
+    project_context:
+        Relevant RAG chunks about the real-estate project(s).
+
+    Returns
+    -------
+    list[str]
+        Validated list of applicable tags.
+    """
+    chain = build_tagger_chain()
+    raw: str = await chain.ainvoke(
+        {
+            "conversation": conversation_text,
+            "project_context": project_context or "No hay contexto adicional disponible.",
+        }
+    )
+    return _parse_tags(raw)

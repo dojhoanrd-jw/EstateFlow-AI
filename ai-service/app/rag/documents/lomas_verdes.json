@@ -1,0 +1,125 @@
+{
+  "project_name": "Lomas Verdes",
+  "developer": "Grupo Premium Living",
+  "type": "Residencial de lujo - Departamentos y penthouses",
+  "location": {
+    "address": "Sierra Madre 1200, Col. Valle de las Palmas",
+    "city": "Monterrey",
+    "state": "Nuevo Leon",
+    "zip": "64890",
+    "neighborhood": "Valle Oriente / San Pedro Garza Garcia",
+    "nearby_landmarks": [
+      "Centro comercial Fashion Drive a 3 minutos",
+      "Parque Rufino Tamayo a 5 minutos",
+      "Hospital San Jose Tec de Monterrey a 8 minutos",
+      "Tec de Monterrey Campus Monterrey a 10 minutos",
+      "Aeropuerto Internacional de Monterrey a 25 minutos"
+    ]
+  },
+  "description": "Lomas Verdes es el desarrollo residencial mas exclusivo de Monterrey, ubicado en el corredor de mayor plusvalia de la zona metropolitana. Con solo 48 unidades distribuidas en dos torres de 15 pisos, ofrece privacidad absoluta, acabados importados y vistas panoramicas a la Sierra Madre Oriental. Cada unidad cuenta con sistema domotico integrado, aire acondicionado central VRF y ventanales de piso a techo con cristal de control solar. El proyecto fue diseñado por el despacho internacional Zaha Hadid Architects con interiorismo de Kelly Hoppen.",
+  "construction_status": "Obra terminada - Entrega inmediata",
+  "delivery_date": "Inmediata",
+  "total_units": 48,
+  "available_units": 8,
+  "floors": 15,
+  "unit_types": [
+    {
+      "type": "Grand Suite - 2 recamaras",
+      "size_m2": 160,
+      "bathrooms": 2.5,
+      "parking_spots": 2,
+      "storage_unit": true,
+      "price_mxn": 12500000,
+      "monthly_hoa_mxn": 12000,
+      "description": "Suite de dos recamaras con acabados de marmol Calacatta en baños, pisos de madera de ingenieria europea, cocina Gaggenau totalmente equipada, terraza de 20 m2 con vista a la sierra y cuarto de servicio con baño."
+    },
+    {
+      "type": "Grand Residence - 3 recamaras",
+      "size_m2": 230,
+      "bathrooms": 3.5,
+      "parking_spots": 3,
+      "storage_unit": true,
+      "price_mxn": 18700000,
+      "monthly_hoa_mxn": 16500,
+      "description": "Residencia de tres recamaras con master suite de 45 m2 con walking closet doble, sala de estar, estudio/oficina, cuarto de servicio, bar con cava de vinos integrada y dos terrazas con vista panoramica."
+    },
+    {
+      "type": "Penthouse - 4 recamaras",
+      "size_m2": 380,
+      "bathrooms": 4.5,
+      "parking_spots": 4,
+      "storage_unit": true,
+      "price_mxn": 35000000,
+      "monthly_hoa_mxn": 25000,
+      "description": "Solo 4 penthouses en todo el desarrollo. Doble altura en sala principal, rooftop privado de 80 m2 con alberca infinity, jacuzzi y area de asador. Cuatro recamaras en suite, sala de cine, bodega de vinos, cuarto de servicio doble. Elevador privado directo al departamento. Acabados completamente personalizables."
+    },
+    {
+      "type": "Sky Penthouse - 5 recamaras (ultimo piso completo)",
+      "size_m2": 520,
+      "bathrooms": 6,
+      "parking_spots": 5,
+      "storage_unit": true,
+      "price_mxn": 52000000,
+      "monthly_hoa_mxn": 35000,
+      "description": "Exclusivamente 2 unidades: ocupa la totalidad del piso 15. Diseño completamente personalizable. Incluye rooftop privado de 120 m2 con alberca, area de spa con sauna y vapor, terraza con vista 360 grados a la sierra y la ciudad. Cinco recamaras en suite, sala principal con chimenea, comedor formal para 12 personas, cocina de chef con doble isla, sala de cine THX, gimnasio privado y dos cuartos de servicio independientes."
+    }
+  ],
+  "amenities": [
+    "Lobby de doble altura con recepcion y concierge 24/7",
+    "Alberca infinity en rooftop con vista a la Sierra Madre",
+    "Spa completo con sauna, vapor y sala de masajes",
+    "Gimnasio premium equipado con Technogym",
+    "Wine bar y lounge privado para residentes",
+    "Sala de cine con sistema Dolby Atmos",
+    "Business center con salas de juntas",
+    "Salon de eventos con cocina y terraza",
+    "Area de juegos infantiles indoor",
+    "Dog park y pet grooming station",
+    "Servicio de valet parking",
+    "Car wash en sitio",
+    "Cargadores para vehiculos electricos en cada cajon",
+    "Seguridad perimetral con tecnologia de reconocimiento facial",
+    "Helipuerto en el rooftop (autorizacion en tramite)"
+  ],
+  "financing_options": [
+    {
+      "type": "Contado",
+      "description": "Pago de contado con 12% de descuento sobre precio de lista. Escrituracion incluida."
+    },
+    {
+      "type": "Plan de pagos directo",
+      "description": "40% de enganche, 60% a 6 meses sin intereses directamente con el desarrollador. Aplica para unidades de entrega inmediata."
+    },
+    {
+      "type": "Credito bancario premium",
+      "description": "Alianza exclusiva con HSBC Premier y Banorte Preferente. Tasa fija preferencial desde 9.5% anual. Plazos de 10 a 20 años. Enganche desde 20%. Proceso de aprobacion acelerado para clientes del desarrollo."
+    },
+    {
+      "type": "Credito internacional",
+      "description": "Para compradores extranjeros o con ingresos en dolares. Financiamiento a traves de HSBC Mexico con documentacion simplificada para residentes fiscales en USA o Canada."
+    }
+  ],
+  "special_promotions": [
+    "Las ultimas 8 unidades disponibles incluyen paquete de equipamiento de cocina completo (valor $450,000 MXN)",
+    "Membresia de 1 año en el Club de Golf Valle Alto incluida con la compra",
+    "Diseño de interiores personalizado sin costo con interiorista del desarrollo para penthouses"
+  ],
+  "investment_metrics": {
+    "estimated_annual_appreciation": "8-12%",
+    "rental_yield_annual": "5-7%",
+    "avg_rental_price_monthly": {
+      "2_bed": 45000,
+      "3_bed": 68000,
+      "penthouse": 120000
+    },
+    "comparable_developments": "Prival, Tao Residences, Landmark Torre"
+  },
+  "target_market": "Ejecutivos de alto nivel, empresarios, inversionistas, familias de alto poder adquisitivo, compradores internacionales que buscan residencia en Mexico.",
+  "contact": {
+    "sales_office": "Showroom Lomas Verdes, Sierra Madre 1200, PB",
+    "phone": "+52 81 8363 2100",
+    "whatsapp": "+52 81 1234 5678",
+    "email": "exclusivo@lomasverdes.mx",
+    "office_hours": "Lunes a Sabado 10:00 - 20:00, Domingo con cita previa"
+  }
+}
