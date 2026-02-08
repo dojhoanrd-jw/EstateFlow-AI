@@ -1,7 +1,11 @@
 import { type NextRequest } from 'next/server';
+import { randomUUID } from 'node:crypto';
 import { auth } from '@/backend/features/auth/auth.config';
 import { ApiError } from './api-error';
 import { apiError } from './api-response';
+import type { RouteContext } from '@/shared/types';
+
+const MAX_BODY_BYTES = 1_048_576; // 1 MB
 
 export interface AuthenticatedUser {
   id: string;
@@ -16,7 +20,7 @@ export type AuthenticatedRequest = NextRequest & {
 
 type HandlerFn = (
   req: AuthenticatedRequest,
-  context: { params: Promise<Record<string, string>> },
+  context: RouteContext,
 ) => Promise<Response>;
 
 // ---------------------------------------------------------------------------
@@ -25,7 +29,7 @@ type HandlerFn = (
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
-function validateOrigin(req: NextRequest): void {
+export function validateOrigin(req: NextRequest): void {
   if (SAFE_METHODS.has(req.method)) return;
 
   const origin = req.headers.get('origin');
@@ -43,11 +47,17 @@ function validateOrigin(req: NextRequest): void {
 export function withAuth(handler: HandlerFn) {
   return async (
     req: NextRequest,
-    context: { params: Promise<Record<string, string>> },
+    context: RouteContext,
   ): Promise<Response> => {
+    const requestId = req.headers.get('x-request-id') || randomUUID();
     try {
-      // Reject cross-origin state-changing requests (CSRF protection)
       validateOrigin(req);
+
+      // Reject oversized request bodies
+      const contentLength = req.headers.get('content-length');
+      if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+        throw ApiError.tooLarge('Request body too large (max 1 MB)');
+      }
 
       const session = await auth();
 
@@ -58,9 +68,13 @@ export function withAuth(handler: HandlerFn) {
       const authenticatedReq = req as AuthenticatedRequest;
       authenticatedReq.user = session.user as AuthenticatedUser;
 
-      return await handler(authenticatedReq, context);
+      const response = await handler(authenticatedReq, context);
+      response.headers.set('X-Request-ID', requestId);
+      return response;
     } catch (error) {
-      return apiError(error);
+      const response = apiError(error);
+      response.headers.set('X-Request-ID', requestId);
+      return response;
     }
   };
 }

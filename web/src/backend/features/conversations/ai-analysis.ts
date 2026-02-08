@@ -4,6 +4,25 @@ import { broadcastToConversation } from '@/backend/server/socket/io';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
+// ---------------------------------------------------------------------------
+// Retry constants
+// ---------------------------------------------------------------------------
+
+const MAX_RETRIES = 3;
+const RETRY_BASE_MS = 2_000;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryable(status: number): boolean {
+  return status >= 500 || status === 408 || status === 429;
+}
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 interface MessageForAnalysis {
   sender_type: 'agent' | 'lead';
   sender_name: string;
@@ -28,12 +47,49 @@ const SQL_ALL_MESSAGES_WITH_SENDERS = `
   ORDER BY m.created_at ASC
 `;
 
+// ---------------------------------------------------------------------------
+// Debounce: coalesce rapid consecutive messages into a single AI call
+// ---------------------------------------------------------------------------
+
+const DEBOUNCE_MS = 2_000;
+const MAX_PENDING_TIMERS = 5_000;
+const pendingTimers = new Map<string, NodeJS.Timeout>();
+
 /**
- * Trigger AI analysis for a conversation.
+ * Debounced wrapper around triggerAIAnalysis.
+ * Resets the timer on each call so only the last message in a burst triggers analysis.
+ */
+export function debouncedTriggerAIAnalysis(conversationId: string): void {
+  const existing = pendingTimers.get(conversationId);
+  if (existing) clearTimeout(existing);
+
+  const timer = setTimeout(() => {
+    pendingTimers.delete(conversationId);
+    triggerAIAnalysis(conversationId).catch(() => {});
+  }, DEBOUNCE_MS);
+
+  pendingTimers.set(conversationId, timer);
+
+  // Safety cap: flush oldest entries immediately if map grows too large
+  if (pendingTimers.size > MAX_PENDING_TIMERS) {
+    const excess = pendingTimers.size - MAX_PENDING_TIMERS;
+    let cleared = 0;
+    for (const [id, oldTimer] of pendingTimers) {
+      if (cleared >= excess) break;
+      clearTimeout(oldTimer);
+      pendingTimers.delete(id);
+      triggerAIAnalysis(id).catch(() => {});
+      cleared++;
+    }
+  }
+}
+
+/**
+ * Trigger AI analysis for a conversation with exponential backoff retry.
  * Fetches all messages, sends them to the AI service, and updates the conversation
  * with the results. Designed to be called fire-and-forget (don't await).
  */
-export async function triggerAIAnalysis(conversationId: string): Promise<void> {
+async function triggerAIAnalysis(conversationId: string): Promise<void> {
   try {
     const messages = await db.queryMany<MessageForAnalysis>(
       SQL_ALL_MESSAGES_WITH_SENDERS,
@@ -42,38 +98,62 @@ export async function triggerAIAnalysis(conversationId: string): Promise<void> {
 
     if (messages.length === 0) return;
 
-    const response = await fetch(`${AI_SERVICE_URL}/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        conversation_id: conversationId,
-        messages: messages.map((m) => ({
-          sender_type: m.sender_type,
-          sender_name: m.sender_name,
-          content: m.content,
-        })),
-      }),
+    const payload = JSON.stringify({
+      conversation_id: conversationId,
+      messages: messages.map((m) => ({
+        sender_type: m.sender_type,
+        sender_name: m.sender_name,
+        content: m.content,
+      })),
     });
 
-    if (!response.ok) {
-      console.error(`[AI Analysis] Failed for ${conversationId}: ${response.status}`);
-      return;
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const response = await fetch(`${AI_SERVICE_URL}/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+        });
+
+        if (response.ok) {
+          const result: AnalyzeResponse = await response.json();
+
+          await conversationRepository.update(conversationId, {
+            ai_summary: result.summary,
+            ai_priority: result.priority,
+            ai_tags: result.tags,
+          });
+
+          broadcastToConversation(conversationId, 'ai_update', {
+            conversation_id: conversationId,
+            ai_summary: result.summary,
+            ai_priority: result.priority,
+            ai_tags: result.tags,
+          });
+
+          return;
+        }
+
+        if (!isRetryable(response.status)) {
+          console.error(`[AI Analysis] Non-retryable error for ${conversationId}: ${response.status}`);
+          return;
+        }
+
+        lastError = new Error(`HTTP ${response.status}`);
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+      }
+
+      if (attempt < MAX_RETRIES - 1) {
+        const backoff = RETRY_BASE_MS * Math.pow(2, attempt);
+        console.warn(`[AI Analysis] Attempt ${attempt + 1} failed for ${conversationId}, retrying in ${backoff}ms`);
+        await delay(backoff);
+      }
     }
 
-    const result: AnalyzeResponse = await response.json();
-
-    await conversationRepository.update(conversationId, {
-      ai_summary: result.summary,
-      ai_priority: result.priority,
-      ai_tags: result.tags,
-    });
-
-    broadcastToConversation(conversationId, 'ai_update', {
-      conversation_id: conversationId,
-      ai_summary: result.summary,
-      ai_priority: result.priority,
-      ai_tags: result.tags,
-    });
+    console.error(`[AI Analysis] All ${MAX_RETRIES} attempts failed for ${conversationId}:`, lastError);
   } catch (error) {
     console.error(`[AI Analysis] Error for ${conversationId}:`, error);
   }

@@ -1,10 +1,9 @@
 import { withAuth, type AuthenticatedRequest } from '@/backend/server/lib/with-auth';
 import { apiSuccess, apiDeleted, apiError } from '@/backend/server/lib/api-response';
-import { ApiError } from '@/backend/server/lib/api-error';
 import { conversationService } from './conversation.service';
 import { updateConversationSchema } from '@/shared/validations/schemas';
-
-type RouteContext = { params: Promise<Record<string, string>> };
+import { uuidSchema } from '@/shared/validations/common';
+import type { RouteContext } from '@/shared/types';
 
 // ---------------------------------------------------------------------------
 // GET /api/conversations/[id]
@@ -12,8 +11,8 @@ type RouteContext = { params: Promise<Record<string, string>> };
 
 export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
-    const { id } = await context.params;
-    if (!id) throw ApiError.badRequest('Missing resource ID');
+    const { id: rawId } = await context.params;
+    const id = uuidSchema.parse(rawId);
 
     const conversation = await conversationService.getConversationById(
       id,
@@ -33,8 +32,8 @@ export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteCont
 
 export const PUT = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
-    const { id } = await context.params;
-    if (!id) throw ApiError.badRequest('Missing resource ID');
+    const { id: rawId } = await context.params;
+    const id = uuidSchema.parse(rawId);
     const body = await req.json();
     const data = updateConversationSchema.parse(body);
 
@@ -57,8 +56,8 @@ export const PUT = withAuth(async (req: AuthenticatedRequest, context: RouteCont
 
 export const DELETE = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
-    const { id } = await context.params;
-    if (!id) throw ApiError.badRequest('Missing resource ID');
+    const { id: rawId } = await context.params;
+    const id = uuidSchema.parse(rawId);
 
     await conversationService.archiveConversation(
       id,

@@ -1,5 +1,5 @@
 import { leadRepository } from './lead.repository';
-import { ServiceError } from '@/backend/server/lib/service-error';
+import { ApiError } from '@/backend/server/lib/api-error';
 import { paginationMeta } from '@/shared/validations/common';
 import type { Lead } from '@/shared/types';
 import type { CreateLeadInput, UpdateLeadInput } from '@/shared/validations/schemas';
@@ -31,13 +31,13 @@ export const leadService = {
   },
 
   /**
-   * Get a single lead by ID or throw a 404 ServiceError.
+   * Get a single lead by ID or throw a 404 ApiError.
    */
   async getLeadById(id: string): Promise<Lead> {
     const lead = await leadRepository.findById(id);
 
     if (!lead) {
-      throw ServiceError.notFound('Lead');
+      throw ApiError.notFound('Lead');
     }
 
     return lead;
@@ -58,13 +58,13 @@ export const leadService = {
     const existing = await leadRepository.findById(id);
 
     if (!existing) {
-      throw ServiceError.notFound('Lead');
+      throw ApiError.notFound('Lead');
     }
 
     const updated = await leadRepository.update(id, data);
 
     if (!updated) {
-      throw ServiceError.notFound('Lead');
+      throw ApiError.notFound('Lead');
     }
 
     return updated;

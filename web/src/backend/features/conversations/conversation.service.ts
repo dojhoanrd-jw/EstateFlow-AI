@@ -1,5 +1,6 @@
 import { conversationRepository } from './conversation.repository';
-import { ServiceError } from '@/backend/server/lib/service-error';
+import { ApiError } from '@/backend/server/lib/api-error';
+import { assertConversationAccess } from '@/backend/server/lib/assert-ownership';
 import { paginationMeta } from '@/shared/validations/common';
 import type { UserRole, ConversationWithLead, Conversation } from '@/shared/types';
 import type {
@@ -7,21 +8,6 @@ import type {
   UpdateConversationInput,
   ConversationFilters,
 } from '@/shared/validations/schemas';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function assertAgentOwnership(
-  conversation: ConversationWithLead,
-  userId: string,
-  role: UserRole,
-): void {
-  if (role === 'admin') return;
-  if (conversation.assigned_agent_id !== userId) {
-    throw ServiceError.forbidden('You do not have access to this conversation');
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Service
@@ -66,10 +52,10 @@ export const conversationService = {
     const conversation = await conversationRepository.findById(id);
 
     if (!conversation) {
-      throw ServiceError.notFound('Conversation');
+      throw ApiError.notFound('Conversation');
     }
 
-    assertAgentOwnership(conversation, userId, role);
+    assertConversationAccess(conversation, userId, role);
 
     return conversation;
   },
@@ -97,15 +83,15 @@ export const conversationService = {
     const existing = await conversationRepository.findById(id);
 
     if (!existing) {
-      throw ServiceError.notFound('Conversation');
+      throw ApiError.notFound('Conversation');
     }
 
-    assertAgentOwnership(existing, userId, role);
+    assertConversationAccess(existing, userId, role);
 
     const updated = await conversationRepository.update(id, data);
 
     if (!updated) {
-      throw ServiceError.notFound('Conversation');
+      throw ApiError.notFound('Conversation');
     }
 
     return updated;

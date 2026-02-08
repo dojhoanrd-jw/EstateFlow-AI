@@ -87,6 +87,7 @@ async function checkRateLimitRedis(
 
 interface WindowEntry { timestamps: number[] }
 const memStore = new Map<string, WindowEntry>();
+const MAX_MEM_ENTRIES = 10_000;
 let lastCleanup = Date.now();
 
 function checkRateLimitMemory(
@@ -106,6 +107,17 @@ function checkRateLimitMemory(
     }
   }
 
+  // Evict oldest entries if map exceeds cap (Map iterates in insertion order)
+  if (memStore.size > MAX_MEM_ENTRIES) {
+    const excess = memStore.size - MAX_MEM_ENTRIES;
+    let deleted = 0;
+    for (const k of memStore.keys()) {
+      if (deleted >= excess) break;
+      memStore.delete(k);
+      deleted++;
+    }
+  }
+
   let entry = memStore.get(key);
   if (!entry) { entry = { timestamps: [] }; memStore.set(key, entry); }
   entry.timestamps = entry.timestamps.filter((t) => t > cutoff);
@@ -118,6 +130,16 @@ function checkRateLimitMemory(
   entry.timestamps.push(now);
   return { allowed: true, remaining: maxRequests - entry.timestamps.length, resetMs: windowMs };
 }
+
+// Periodic cleanup independent of request flow (unref'd so it won't block shutdown)
+const cleanupInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [k, e] of memStore) {
+    e.timestamps = e.timestamps.filter((t) => t > now - 120_000);
+    if (e.timestamps.length === 0) memStore.delete(k);
+  }
+}, 60_000);
+if (cleanupInterval.unref) cleanupInterval.unref();
 
 // ---------------------------------------------------------------------------
 // Unified check (Redis → in-memory fallback)

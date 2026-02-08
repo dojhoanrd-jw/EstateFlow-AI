@@ -1,6 +1,7 @@
 import { messageRepository } from './message.repository';
 import { conversationRepository } from '@/backend/features/conversations/conversation.repository';
-import { ServiceError } from '@/backend/server/lib/service-error';
+import { ApiError } from '@/backend/server/lib/api-error';
+import { assertConversationAccess } from '@/backend/server/lib/assert-ownership';
 import { paginationMeta } from '@/shared/validations/common';
 import type { UserRole, MessageWithSender } from '@/shared/types';
 import type { CreateMessageInput } from '@/shared/validations/schemas';
@@ -10,8 +11,7 @@ import type { CreateMessageInput } from '@/shared/validations/schemas';
 // ---------------------------------------------------------------------------
 
 /**
- * Verify the authenticated user has access to the given conversation.
- * Admins can access any conversation; agents only their own.
+ * Fetch a conversation and verify the authenticated user has access.
  * Returns the conversation so callers don't need to re-fetch.
  */
 async function verifyConversationAccess(
@@ -22,12 +22,10 @@ async function verifyConversationAccess(
   const conversation = await conversationRepository.findById(conversationId);
 
   if (!conversation) {
-    throw ServiceError.notFound('Conversation');
+    throw ApiError.notFound('Conversation');
   }
 
-  if (role !== 'admin' && conversation.assigned_agent_id !== userId) {
-    throw ServiceError.forbidden('You do not have access to this conversation');
-  }
+  assertConversationAccess(conversation, userId, role);
 
   return conversation;
 }

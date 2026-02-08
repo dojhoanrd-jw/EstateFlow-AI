@@ -3,6 +3,15 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   serverExternalPackages: ['pg', 'socket.io'],
 
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: '/api/:path*',
+      },
+    ];
+  },
+
   async headers() {
     return [
       {

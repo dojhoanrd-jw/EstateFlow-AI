@@ -15,8 +15,6 @@ export interface User {
   updated_at: string;
 }
 
-export type UserPublic = Omit<User, 'is_active' | 'updated_at'>;
-
 // ============================================
 // Lead
 // ============================================
@@ -169,3 +167,9 @@ export interface TypingUser {
   user_name: string;
   is_typing: boolean;
 }
+
+// ============================================
+// Next.js Route Context
+// ============================================
+
+export type RouteContext = { params: Promise<Record<string, string>> };

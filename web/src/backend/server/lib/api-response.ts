@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { ApiError } from './api-error';
-import { ServiceError } from './service-error';
 
 interface SuccessPayload<T> {
   data: T;
@@ -24,13 +23,6 @@ export function apiDeleted() {
 
 export function apiError(error: unknown) {
   if (error instanceof ApiError) {
-    return NextResponse.json(
-      { error: { message: error.message, code: error.code } },
-      { status: error.statusCode },
-    );
-  }
-
-  if (error instanceof ServiceError) {
     return NextResponse.json(
       { error: { message: error.message, code: error.code } },
       { status: error.statusCode },

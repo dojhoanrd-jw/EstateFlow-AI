@@ -7,19 +7,16 @@ import type { CreateLeadInput, UpdateLeadInput } from '@/shared/validations/sche
 // SQL Fragments
 // ---------------------------------------------------------------------------
 
+const LEAD_COLUMNS = [
+  'id', 'name', 'email', 'phone', 'project_interest',
+  'source', 'budget', 'notes', 'assigned_agent_id',
+  'created_at', 'updated_at',
+] as const;
+
+const LEAD_COLUMNS_STR = LEAD_COLUMNS.join(', ');
+
 const SELECT_LEAD = `
-  SELECT
-    id,
-    name,
-    email,
-    phone,
-    project_interest,
-    source,
-    budget,
-    notes,
-    assigned_agent_id,
-    created_at,
-    updated_at
+  SELECT ${LEAD_COLUMNS_STR}
   FROM leads
 `;
 
@@ -38,7 +35,7 @@ const SQL_FIND_BY_ID = `
 const SQL_INSERT = `
   INSERT INTO leads (name, email, phone, project_interest, source, budget, notes, assigned_agent_id)
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-  RETURNING *
+  RETURNING ${LEAD_COLUMNS_STR}
 `;
 
 const SQL_COUNT_ALL = `
@@ -104,7 +101,7 @@ export const leadRepository = {
    * fields that were not included in the request body.
    */
   async update(id: string, data: UpdateLeadInput): Promise<Lead | null> {
-    const query = buildUpdateQuery('leads', id, data, UPDATABLE_COLUMNS);
+    const query = buildUpdateQuery('leads', id, data, UPDATABLE_COLUMNS, LEAD_COLUMNS_STR);
     if (!query) return this.findById(id);
     return db.queryOne<Lead>(query.text, query.params);
   },

@@ -2,8 +2,10 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { parse } from 'node:url';
 import next from 'next';
 import { Server as SocketIOServer, type Socket } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
 import { decode } from 'next-auth/jwt';
-import { Pool } from 'pg';
+import Redis from 'ioredis';
+import { db } from './src/backend/server/db/client';
 
 // ---------------------------------------------------------------------------
 // Environment
@@ -15,10 +17,8 @@ const port = parseInt(process.env.PORT || '3000', 10);
 const secret = process.env.AUTH_SECRET;
 
 // ---------------------------------------------------------------------------
-// Database pool (used for Socket room authorization only)
+// Socket room authorization (uses shared DB pool from client.ts)
 // ---------------------------------------------------------------------------
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
 
 async function canAccessConversation(
   userId: string,
@@ -27,11 +27,11 @@ async function canAccessConversation(
 ): Promise<boolean> {
   if (role === 'admin') return true;
 
-  const { rows } = await pool.query<{ id: string }>(
+  const row = await db.queryOne<{ id: string }>(
     'SELECT id FROM conversations WHERE id = $1 AND assigned_agent_id = $2 LIMIT 1',
     [conversationId, userId],
   );
-  return rows.length > 0;
+  return row !== null;
 }
 
 // ---------------------------------------------------------------------------
@@ -51,6 +51,34 @@ function parseCookie(cookieHeader: string | undefined, name: string): string | n
 interface SocketUser {
   id: string;
   role: string;
+}
+
+// ---------------------------------------------------------------------------
+// Redis adapter setup (optional — falls back to single-instance if no Redis)
+// ---------------------------------------------------------------------------
+
+function createRedisAdapter(io: SocketIOServer): void {
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) return;
+
+  try {
+    const pubClient = new Redis(redisUrl, { lazyConnect: true, enableOfflineQueue: false });
+    const subClient = pubClient.duplicate();
+
+    pubClient.on('error', (err) => console.error('[Redis adapter pub]', err.message));
+    subClient.on('error', (err) => console.error('[Redis adapter sub]', err.message));
+
+    Promise.all([pubClient.connect(), subClient.connect()])
+      .then(() => {
+        io.adapter(createAdapter(pubClient, subClient));
+        console.log('[socket.io] Redis adapter attached');
+      })
+      .catch((err) => {
+        console.warn('[socket.io] Redis adapter unavailable, using in-memory:', err.message);
+      });
+  } catch {
+    // Redis not available — single-instance mode
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -77,6 +105,9 @@ app.prepare().then(() => {
 
   // Store globally so API routes can access it
   (globalThis as Record<string, unknown>).__io = io;
+
+  // Attach Redis adapter for multi-instance scaling (if REDIS_URL is set)
+  createRedisAdapter(io);
 
   // -----------------------------------------------------------------------
   // Socket.IO auth middleware — verify NextAuth session before connection
@@ -111,7 +142,8 @@ app.prepare().then(() => {
       } satisfies SocketUser;
 
       next();
-    } catch {
+    } catch (err) {
+      console.error('[socket.io] Auth error:', err);
       next(new Error('Unauthorized'));
     }
   });
@@ -123,6 +155,10 @@ app.prepare().then(() => {
   io.on('connection', (socket: Socket) => {
     const user = socket.data.user as SocketUser | undefined;
     console.log(`[socket.io] connected: ${socket.id} (user: ${user?.id})`);
+
+    socket.on('error', (err) => {
+      console.error(`[socket.io] Socket error for ${socket.id}:`, err);
+    });
 
     socket.on('join', async (conversationId: string) => {
       if (!user) return;
@@ -146,6 +182,9 @@ app.prepare().then(() => {
       userName: string;
       isTyping: boolean;
     }) => {
+      // Only broadcast if the socket is a member of the room (Fix #8)
+      if (!socket.rooms.has(`conversation:${conversationId}`)) return;
+
       socket.to(`conversation:${conversationId}`).emit('typing', {
         userName,
         isTyping,
@@ -160,4 +199,46 @@ app.prepare().then(() => {
   httpServer.listen(port, hostname, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
   });
+
+  // -----------------------------------------------------------------------
+  // Graceful shutdown
+  // -----------------------------------------------------------------------
+
+  let isShuttingDown = false;
+
+  async function shutdown(signal: string) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    console.log(`\n[shutdown] ${signal} received. Closing gracefully...`);
+
+    httpServer.close(() => {
+      console.log('[shutdown] HTTP server closed');
+    });
+
+    try {
+      io.close();
+      console.log('[shutdown] Socket.IO closed');
+    } catch (err) {
+      console.error('[shutdown] Socket.IO close error:', err);
+    }
+
+    try {
+      await db.pool.end();
+      console.log('[shutdown] DB pool closed');
+    } catch (err) {
+      console.error('[shutdown] DB pool close error:', err);
+    }
+
+    // Force exit after 10s if something hangs
+    setTimeout(() => {
+      console.error('[shutdown] Forced exit after timeout');
+      process.exit(1);
+    }, 10_000).unref();
+
+    process.exit(0);
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 });

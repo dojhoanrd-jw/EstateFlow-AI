@@ -214,6 +214,19 @@ const SQL_AVG_RESPONSE_TIME = `
 `;
 
 // ---------------------------------------------------------------------------
+// In-memory cache (TTL = 30s) — avoids re-running 5 heavy queries per request
+// ---------------------------------------------------------------------------
+
+const CACHE_TTL_MS = 30_000;
+
+interface CacheEntry {
+  data: DashboardStats;
+  expiry: number;
+}
+
+const statsCache = new Map<string, CacheEntry>();
+
+// ---------------------------------------------------------------------------
 // Repository
 // ---------------------------------------------------------------------------
 
@@ -223,9 +236,16 @@ export const dashboardRepository = {
    * are scoped to that agent's conversations. When null, statistics cover
    * the entire system (admin view).
    *
+   * Results are cached in-memory for 30 seconds per agentId key.
    * All five queries run concurrently via Promise.all for minimal latency.
    */
   async getStats(agentId: string | null): Promise<DashboardStats> {
+    const cacheKey = agentId ?? '__all__';
+    const cached = statsCache.get(cacheKey);
+    if (cached && cached.expiry > Date.now()) {
+      return cached.data;
+    }
+
     const param = [agentId];
 
     const [summaryRow, priorityRows, agentRows, tagRows, avgRow] =
@@ -250,7 +270,7 @@ export const dashboardRepository = {
       }
     }
 
-    return {
+    const stats: DashboardStats = {
       total_conversations: summaryRow?.total_conversations ?? 0,
       unreplied_conversations: summaryRow?.unreplied_conversations ?? 0,
       high_priority_unattended: summaryRow?.high_priority_unattended ?? 0,
@@ -259,5 +279,9 @@ export const dashboardRepository = {
       conversations_by_agent: agentRows,
       top_tags: tagRows,
     };
+
+    statsCache.set(cacheKey, { data: stats, expiry: Date.now() + CACHE_TTL_MS });
+
+    return stats;
   },
 };

@@ -15,20 +15,18 @@ const BCRYPT_SALT_ROUNDS = 12;
 // ---------------------------------------------------------------------------
 
 /**
- * Select all user columns EXCEPT password_hash.
- * This projection is reused across every read query to ensure
- * the password hash never leaves the repository layer.
+ * All user columns EXCEPT password_hash — reused across SELECT and RETURNING
+ * clauses to ensure the password hash never leaves the repository layer.
  */
+const USER_SAFE_COLUMNS = [
+  'id', 'name', 'email', 'role',
+  'avatar_url', 'is_active', 'created_at', 'updated_at',
+] as const;
+
+const USER_SAFE_COLUMNS_STR = USER_SAFE_COLUMNS.join(', ');
+
 const SELECT_USER_SAFE = `
-  SELECT
-    id,
-    name,
-    email,
-    role,
-    avatar_url,
-    is_active,
-    created_at,
-    updated_at
+  SELECT ${USER_SAFE_COLUMNS_STR}
   FROM users
 `;
 
@@ -53,15 +51,7 @@ const SQL_FIND_BY_EMAIL = `
 const SQL_INSERT = `
   INSERT INTO users (name, email, password_hash, role)
   VALUES ($1, $2, $3, $4)
-  RETURNING
-    id,
-    name,
-    email,
-    role,
-    avatar_url,
-    is_active,
-    created_at,
-    updated_at
+  RETURNING ${USER_SAFE_COLUMNS_STR}
 `;
 
 const SQL_COUNT_ALL = `
@@ -131,8 +121,7 @@ export const userRepository = {
    * The RETURNING clause excludes password_hash.
    */
   async update(id: string, data: UpdateUserInput): Promise<User | null> {
-    const returning = 'id, name, email, role, avatar_url, is_active, created_at, updated_at';
-    const query = buildUpdateQuery('users', id, data, UPDATABLE_COLUMNS, returning);
+    const query = buildUpdateQuery('users', id, data, UPDATABLE_COLUMNS, USER_SAFE_COLUMNS_STR);
     if (!query) return this.findById(id);
     return db.queryOne<User>(query.text, query.params);
   },

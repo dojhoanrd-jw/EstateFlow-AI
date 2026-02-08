@@ -1,5 +1,5 @@
 import { userRepository } from './user.repository';
-import { ServiceError } from '@/backend/server/lib/service-error';
+import { ApiError } from '@/backend/server/lib/api-error';
 import { paginationMeta } from '@/shared/validations/common';
 import type { User } from '@/shared/types';
 import type { CreateUserInput, UpdateUserInput } from '@/shared/validations/schemas';
@@ -20,7 +20,7 @@ async function assertEmailUnique(
   const existing = await userRepository.findByEmail(email);
 
   if (existing && existing.id !== excludeId) {
-    throw ServiceError.conflict(`A user with email "${email}" already exists`);
+    throw ApiError.conflict(`A user with email "${email}" already exists`);
   }
 }
 
@@ -51,13 +51,13 @@ export const userService = {
   },
 
   /**
-   * Get a single user by ID or throw a 404 ServiceError.
+   * Get a single user by ID or throw a 404 ApiError.
    */
   async getUserById(id: string): Promise<User> {
     const user = await userRepository.findById(id);
 
     if (!user) {
-      throw ServiceError.notFound('User');
+      throw ApiError.notFound('User');
     }
 
     return user;
@@ -81,7 +81,7 @@ export const userService = {
     const existing = await userRepository.findById(id);
 
     if (!existing) {
-      throw ServiceError.notFound('User');
+      throw ApiError.notFound('User');
     }
 
     if (data.email !== undefined && data.email !== existing.email) {
@@ -91,7 +91,7 @@ export const userService = {
     const updated = await userRepository.update(id, data);
 
     if (!updated) {
-      throw ServiceError.notFound('User');
+      throw ApiError.notFound('User');
     }
 
     return updated;

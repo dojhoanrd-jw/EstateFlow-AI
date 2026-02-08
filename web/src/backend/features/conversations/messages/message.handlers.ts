@@ -1,13 +1,11 @@
 import { withAuth, type AuthenticatedRequest } from '@/backend/server/lib/with-auth';
-import { apiSuccess, apiCreated, apiError } from '@/backend/server/lib/api-response';
+import { apiSuccess, apiCreated, apiDeleted, apiError } from '@/backend/server/lib/api-response';
 import { messageService } from './message.service';
 import { createMessageSchema } from '@/shared/validations/schemas';
-import { paginationSchema } from '@/shared/validations/common';
-import { ApiError } from '@/backend/server/lib/api-error';
+import { paginationSchema, uuidSchema } from '@/shared/validations/common';
 import { broadcastToConversation } from '@/backend/server/socket/io';
-import { triggerAIAnalysis } from '@/backend/features/conversations/ai-analysis';
-
-type RouteContext = { params: Promise<Record<string, string>> };
+import { debouncedTriggerAIAnalysis } from '@/backend/features/conversations/ai-analysis';
+import type { RouteContext } from '@/shared/types';
 
 // ---------------------------------------------------------------------------
 // GET /api/conversations/[id]/messages
@@ -15,8 +13,8 @@ type RouteContext = { params: Promise<Record<string, string>> };
 
 export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
-    const { id: conversationId } = await context.params;
-    if (!conversationId) throw ApiError.badRequest('Missing conversation ID');
+    const { id: rawId } = await context.params;
+    const conversationId = uuidSchema.parse(rawId);
     const { searchParams } = new URL(req.url);
 
     const { page, limit } = paginationSchema.parse({
@@ -44,8 +42,8 @@ export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteCont
 
 export const POST = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
-    const { id: conversationId } = await context.params;
-    if (!conversationId) throw ApiError.badRequest('Missing conversation ID');
+    const { id: rawId } = await context.params;
+    const conversationId = uuidSchema.parse(rawId);
     const body = await req.json();
     const data = createMessageSchema.parse(body);
 
@@ -60,7 +58,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest, context: RouteCon
     broadcastToConversation(conversationId, 'new_message', message);
 
     // Fire-and-forget AI re-analysis with updated conversation
-    triggerAIAnalysis(conversationId).catch(() => {});
+    debouncedTriggerAIAnalysis(conversationId);
 
     return apiCreated(message);
   } catch (error) {
@@ -74,8 +72,8 @@ export const POST = withAuth(async (req: AuthenticatedRequest, context: RouteCon
 
 export const PATCH = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
-    const { id: conversationId } = await context.params;
-    if (!conversationId) throw ApiError.badRequest('Missing conversation ID');
+    const { id: rawId } = await context.params;
+    const conversationId = uuidSchema.parse(rawId);
 
     await messageService.markConversationAsRead(
       conversationId,
@@ -83,7 +81,7 @@ export const PATCH = withAuth(async (req: AuthenticatedRequest, context: RouteCo
       req.user.role,
     );
 
-    return apiSuccess(null, 204);
+    return apiDeleted();
   } catch (error) {
     return apiError(error);
   }

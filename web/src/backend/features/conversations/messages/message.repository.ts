@@ -86,13 +86,6 @@ const SQL_MARK_CONVERSATION_READ = `
   WHERE id = $1 AND NOT is_read
 `;
 
-const SQL_COUNT_UNREAD = `
-  SELECT COUNT(*)::int AS unread_count
-  FROM messages
-  WHERE conversation_id = $1
-    AND is_read = false
-`;
-
 const SQL_COUNT_TOTAL = `
   SELECT COUNT(*)::int AS total
   FROM messages
@@ -168,17 +161,6 @@ export const messageRepository = {
       db.query(SQL_MARK_AS_READ, [conversationId, readerSenderType]),
       db.query(SQL_MARK_CONVERSATION_READ, [conversationId]),
     ]);
-  },
-
-  /**
-   * Count unread messages in a conversation.
-   */
-  async countUnread(conversationId: string): Promise<number> {
-    const row = await db.queryOne<{ unread_count: number }>(
-      SQL_COUNT_UNREAD,
-      [conversationId],
-    );
-    return row?.unread_count ?? 0;
   },
 
   /**
