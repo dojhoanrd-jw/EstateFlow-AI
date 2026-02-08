@@ -1,34 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import {
-  LayoutDashboard,
-  MessageSquare,
-  X,
-  Building2,
-  LogOut,
-} from 'lucide-react';
+import { X, Building2 } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
-import { Avatar } from '@/frontend/components/ui/avatar';
-import { NAV_ITEMS, type NavItem } from '@/frontend/config/navigation';
-import type { UserRole } from '@/shared/types';
-
-// ============================================
-// Icon resolver
-// ============================================
-
-const iconMap = {
-  LayoutDashboard,
-  MessageSquare,
-} as const;
-
-function NavIcon({ name, className }: { name: NavItem['icon']; className?: string }) {
-  const Icon = iconMap[name];
-  return <Icon className={className} size={20} />;
-}
+import { NavIcon } from '@/frontend/components/layout/nav-icon';
+import { NAV_ITEMS } from '@/frontend/config/navigation';
+import { UserSection } from '@/frontend/components/layout/user-section';
 
 // ============================================
 // Mobile Nav Props
@@ -45,15 +24,7 @@ interface MobileNavProps {
 
 export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
-
-  const user = session?.user as
-    | { name?: string; email?: string; role?: UserRole; image?: string }
-    | undefined;
-
-  const userName = user?.name ?? 'User';
-  const userRole = user?.role ?? 'agent';
-  const userAvatar = user?.image ?? null;
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // Close nav when route changes
   useEffect(() => {
@@ -73,6 +44,42 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
     };
   }, [isOpen]);
 
+  // Escape key to close + focus trap
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isOpen) return;
+
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && panelRef.current) {
+        const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+          'a, button, input, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!first || !last) return;
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    },
+    [isOpen, onClose],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
   return (
     <>
       {/* ---- Backdrop overlay ---- */}
@@ -89,6 +96,10 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
       {/* ---- Slide-in panel ---- */}
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
         className={cn(
           'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-slate-900 shadow-2xl transition-transform duration-300 ease-out lg:hidden',
           isOpen ? 'translate-x-0' : '-translate-x-full',
@@ -150,33 +161,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         </nav>
 
         {/* ---- User section ---- */}
-        <div className="border-t border-slate-800 p-4">
-          <div className="mb-3 flex items-center gap-3">
-            <Avatar name={userName} src={userAvatar} size="sm" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">
-                {userName}
-              </p>
-              <span
-                className={cn(
-                  'inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
-                  userRole === 'admin'
-                    ? 'bg-amber-500/15 text-amber-400'
-                    : 'bg-teal-500/15 text-teal-400',
-                )}
-              >
-                {userRole}
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-red-400"
-          >
-            <LogOut size={16} />
-            Sign out
-          </button>
-        </div>
+        <UserSection variant="mobile" />
       </div>
     </>
   );

@@ -9,9 +9,9 @@ import {
 } from 'lucide-react';
 import { Card, CardBody } from '@/frontend/components/ui/card';
 import { cn } from '@/frontend/lib/utils';
-import { AISummary } from '@/frontend/features/ai/components/ai-summary';
-import { AITags } from '@/frontend/features/ai/components/ai-tags';
-import { AIPriorityBadge } from '@/frontend/features/ai/components/ai-priority-badge';
+import { AISummary } from './ai-summary';
+import { AITags } from './ai-tags';
+import { AIPriorityBadge } from './ai-priority-badge';
 import type { ConversationWithLead } from '@/shared/types';
 
 // ============================================

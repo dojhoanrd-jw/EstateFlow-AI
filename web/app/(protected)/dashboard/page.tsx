@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/frontend/components/feedback/error-boundary";
 import { DashboardPage } from "@/frontend/features/dashboard/pages/dashboard-page";
 
 export const metadata = {
@@ -5,5 +6,9 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <DashboardPage />;
+  return (
+    <ErrorBoundary fallbackTitle="Dashboard failed to load">
+      <DashboardPage />
+    </ErrorBoundary>
+  );
 }

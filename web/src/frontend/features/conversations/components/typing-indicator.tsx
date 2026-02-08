@@ -1,13 +1,9 @@
 import { cn } from '@/frontend/lib/utils';
+import type { TypingUser } from '@/shared/types';
 
 // ============================================
 // Types
 // ============================================
-
-interface TypingUser {
-  user_name: string;
-  is_typing: boolean;
-}
 
 interface TypingIndicatorProps {
   typingUsers: TypingUser[];
@@ -71,6 +67,12 @@ export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps
           30% {
             transform: translateY(-4px);
             opacity: 1;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-\\[typing-bounce_1\\.4s_ease-in-out_infinite\\] {
+            animation: none !important;
+            opacity: 0.7;
           }
         }
       `}</style>

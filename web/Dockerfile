@@ -20,7 +20,7 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/server.mjs ./server.mjs
+COPY --from=builder /app/server.ts ./server.ts
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=deps /app/node_modules ./node_modules
@@ -29,4 +29,4 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-CMD ["node", "server.mjs"]
+CMD ["npx", "tsx", "server.ts"]

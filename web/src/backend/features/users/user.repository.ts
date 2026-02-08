@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { db } from '@/backend/server/db/client';
+import { buildUpdateQuery } from '@/backend/server/db/build-update-query';
 import type { User } from '@/shared/types';
 import type { CreateUserInput, UpdateUserInput } from '@/shared/validations/schemas';
 
@@ -120,7 +121,8 @@ export const userRepository = {
       passwordHash,
       data.role,
     ]);
-    return result!;
+    if (!result) throw new Error('INSERT did not return a row');
+    return result;
   },
 
   /**
@@ -129,41 +131,10 @@ export const userRepository = {
    * The RETURNING clause excludes password_hash.
    */
   async update(id: string, data: UpdateUserInput): Promise<User | null> {
-    const setClauses: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
-
-    for (const [key, column] of Object.entries(UPDATABLE_COLUMNS)) {
-      const value = data[key as keyof UpdateUserInput];
-      if (value !== undefined) {
-        setClauses.push(`${column} = $${paramIndex++}`);
-        params.push(value);
-      }
-    }
-
-    if (setClauses.length === 0) {
-      return this.findById(id);
-    }
-
-    setClauses.push(`updated_at = NOW()`);
-
-    const text = `
-      UPDATE users
-      SET ${setClauses.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING
-        id,
-        name,
-        email,
-        role,
-        avatar_url,
-        is_active,
-        created_at,
-        updated_at
-    `;
-    params.push(id);
-
-    return db.queryOne<User>(text, params);
+    const returning = 'id, name, email, role, avatar_url, is_active, created_at, updated_at';
+    const query = buildUpdateQuery('users', id, data, UPDATABLE_COLUMNS, returning);
+    if (!query) return this.findById(id);
+    return db.queryOne<User>(query.text, query.params);
   },
 
   /**

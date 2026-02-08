@@ -160,3 +160,12 @@ export interface WSTypingEvent {
 export interface WSConversationUpdate {
   conversation: ConversationWithLead;
 }
+
+// ============================================
+// Typing Indicator
+// ============================================
+
+export interface TypingUser {
+  user_name: string;
+  is_typing: boolean;
+}

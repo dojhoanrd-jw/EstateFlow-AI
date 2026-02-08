@@ -1,4 +1,5 @@
 import { db } from '@/backend/server/db/client';
+import { buildUpdateQuery } from '@/backend/server/db/build-update-query';
 import type { Lead } from '@/shared/types';
 import type { CreateLeadInput, UpdateLeadInput } from '@/shared/validations/schemas';
 
@@ -93,7 +94,8 @@ export const leadRepository = {
       data.notes ?? null,
       data.assigned_agent_id ?? null,
     ]);
-    return result!;
+    if (!result) throw new Error('INSERT did not return a row');
+    return result;
   },
 
   /**
@@ -102,33 +104,9 @@ export const leadRepository = {
    * fields that were not included in the request body.
    */
   async update(id: string, data: UpdateLeadInput): Promise<Lead | null> {
-    const setClauses: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
-
-    for (const [key, column] of Object.entries(UPDATABLE_COLUMNS)) {
-      const value = data[key as keyof UpdateLeadInput];
-      if (value !== undefined) {
-        setClauses.push(`${column} = $${paramIndex++}`);
-        params.push(value);
-      }
-    }
-
-    if (setClauses.length === 0) {
-      return this.findById(id);
-    }
-
-    setClauses.push(`updated_at = NOW()`);
-
-    const text = `
-      UPDATE leads
-      SET ${setClauses.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-    params.push(id);
-
-    return db.queryOne<Lead>(text, params);
+    const query = buildUpdateQuery('leads', id, data, UPDATABLE_COLUMNS);
+    if (!query) return this.findById(id);
+    return db.queryOne<Lead>(query.text, query.params);
   },
 
   /**

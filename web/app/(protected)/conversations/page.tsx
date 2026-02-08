@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/frontend/components/feedback/error-boundary";
 import { ConversationsPage } from "@/frontend/features/conversations/pages/conversations-page";
 
 export const metadata = {
@@ -5,5 +6,9 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <ConversationsPage />;
+  return (
+    <ErrorBoundary fallbackTitle="Conversations failed to load">
+      <ConversationsPage />
+    </ErrorBoundary>
+  );
 }

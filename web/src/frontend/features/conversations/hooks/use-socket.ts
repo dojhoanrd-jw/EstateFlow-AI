@@ -2,16 +2,8 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { MessageWithSender } from '@/shared/types';
-
-// ============================================
-// Types
-// ============================================
-
-interface TypingUser {
-  user_name: string;
-  is_typing: boolean;
-}
+import type { MessageWithSender, TypingUser } from '@/shared/types';
+import { socketConfig } from '@/frontend/config/socket';
 
 // ============================================
 // Singleton Socket.IO connection
@@ -21,13 +13,7 @@ let socketInstance: Socket | null = null;
 
 function getSocket(): Socket {
   if (!socketInstance) {
-    socketInstance = io({
-      path: '/socket.io',
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-    });
+    socketInstance = io(socketConfig);
   }
   return socketInstance;
 }
@@ -57,9 +43,18 @@ export function useSocket(conversationId: string | null) {
 
     const handleConnect = () => setIsConnected(true);
     const handleDisconnect = () => setIsConnected(false);
+    const handleError = (err: Error) => {
+      console.error('[Socket.IO] error:', err.message);
+    };
+    const handleConnectError = (err: Error) => {
+      console.error('[Socket.IO] connect_error:', err.message);
+      setIsConnected(false);
+    };
 
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
+    socket.on('error', handleError);
+    socket.on('connect_error', handleConnectError);
 
     if (socket.connected) setIsConnected(true);
 
@@ -85,6 +80,8 @@ export function useSocket(conversationId: string | null) {
     return () => {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
+      socket.off('error', handleError);
+      socket.off('connect_error', handleConnectError);
       socket.off('new_message', handleNewMessage);
       socket.off('ai_update', handleAiUpdate);
     };
@@ -121,17 +118,12 @@ export function useSocket(conversationId: string | null) {
 export function useTypingIndicator(conversationId: string | null) {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const clearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
-    };
-  }, [conversationId]);
 
   useEffect(() => {
     setTypingUsers([]);
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [conversationId]);
 
   const emitTyping = useCallback(
@@ -139,16 +131,12 @@ export function useTypingIndicator(conversationId: string | null) {
       if (!conversationId) return;
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
+
+      setTypingUsers([{ user_name: leadName, is_typing: true }]);
 
       timeoutRef.current = setTimeout(() => {
-        setTypingUsers([{ user_name: leadName, is_typing: true }]);
-
-        const typingDuration = 2000 + Math.random() * 2000;
-        clearTimeoutRef.current = setTimeout(() => {
-          setTypingUsers([]);
-        }, typingDuration);
-      }, 800);
+        setTypingUsers([]);
+      }, 3000);
     },
     [conversationId],
   );

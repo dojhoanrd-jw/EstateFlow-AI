@@ -19,12 +19,36 @@ type HandlerFn = (
   context: { params: Promise<Record<string, string>> },
 ) => Promise<Response>;
 
+// ---------------------------------------------------------------------------
+// CSRF: Origin-header validation for state-changing requests
+// ---------------------------------------------------------------------------
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+function validateOrigin(req: NextRequest): void {
+  if (SAFE_METHODS.has(req.method)) return;
+
+  const origin = req.headers.get('origin');
+  // Allow same-origin requests (origin header is absent) and server-side calls
+  if (!origin) return;
+
+  const host = req.headers.get('host');
+  const expected = host ? new URL(`https://${host}`).origin : null;
+
+  if (expected && origin !== expected) {
+    throw ApiError.forbidden('Cross-origin request rejected');
+  }
+}
+
 export function withAuth(handler: HandlerFn) {
   return async (
     req: NextRequest,
     context: { params: Promise<Record<string, string>> },
   ): Promise<Response> => {
     try {
+      // Reject cross-origin state-changing requests (CSRF protection)
+      validateOrigin(req);
+
       const session = await auth();
 
       if (!session?.user) {

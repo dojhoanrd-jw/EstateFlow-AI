@@ -35,6 +35,16 @@ function getRateBgColor(rate: number): string {
   return 'bg-red-50 dark:bg-red-900/20';
 }
 
+function getResponseRate(count: number, unreplied: number): number {
+  return count > 0 ? Math.round(((count - unreplied) / count) * 100) : 100;
+}
+
+function getRateBarColor(rate: number): string {
+  if (rate >= 90) return 'bg-emerald-500';
+  if (rate >= 70) return 'bg-amber-500';
+  return 'bg-red-500';
+}
+
 // ============================================
 // Component
 // ============================================
@@ -78,10 +88,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
           </thead>
           <tbody className="divide-y divide-[var(--color-border-subtle)]">
             {sortedAgents.map((agent) => {
-              const responseRate =
-                agent.count > 0
-                  ? Math.round(((agent.count - agent.unreplied) / agent.count) * 100)
-                  : 100;
+              const responseRate = getResponseRate(agent.count, agent.unreplied);
 
               return (
                 <tr
@@ -127,11 +134,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                         <div
                           className={cn(
                             'h-full rounded-full transition-all duration-500',
-                            responseRate >= 90
-                              ? 'bg-emerald-500'
-                              : responseRate >= 70
-                                ? 'bg-amber-500'
-                                : 'bg-red-500',
+                            getRateBarColor(responseRate),
                           )}
                           style={{ width: `${responseRate}%` }}
                         />
@@ -169,10 +172,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
       {/* ====================================== */}
       <CardBody className="md:hidden space-y-3">
         {sortedAgents.map((agent) => {
-          const responseRate =
-            agent.count > 0
-              ? Math.round(((agent.count - agent.unreplied) / agent.count) * 100)
-              : 100;
+          const responseRate = getResponseRate(agent.count, agent.unreplied);
 
           return (
             <div
@@ -227,11 +227,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                 <div
                   className={cn(
                     'h-full rounded-full transition-all duration-500',
-                    responseRate >= 90
-                      ? 'bg-emerald-500'
-                      : responseRate >= 70
-                        ? 'bg-amber-500'
-                        : 'bg-red-500',
+                    getRateBarColor(responseRate),
                   )}
                   style={{ width: `${responseRate}%` }}
                 />

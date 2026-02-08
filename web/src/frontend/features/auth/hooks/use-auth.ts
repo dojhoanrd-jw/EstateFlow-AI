@@ -29,10 +29,10 @@ export function useCurrentUser() {
 
   const user = session?.user
     ? ({
-        id: (session.user as Record<string, unknown>).id as string,
+        id: session.user.id,
         name: session.user.name ?? '',
         email: session.user.email ?? '',
-        role: ((session.user as Record<string, unknown>).role as UserRole) ?? 'agent',
+        role: session.user.role ?? 'agent',
         image: session.user.image ?? null,
       } satisfies SessionUser)
     : null;

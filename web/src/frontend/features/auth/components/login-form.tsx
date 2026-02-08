@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
@@ -9,10 +9,15 @@ import { Building2, AlertCircle, ArrowRight } from 'lucide-react';
 import { loginSchema, type LoginInput } from '@/shared/validations/schemas';
 import { APP_ROUTES } from '@/shared/routes/app.routes';
 import { Button } from '@/frontend/components/ui/button';
+import { Input } from '@/frontend/components/ui/input';
+
+const loginInputClass = 'h-[48px] !rounded-xl !text-[15px] bg-[var(--color-bg-secondary)] focus:bg-[var(--color-bg-primary)] focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500';
 
 export function LoginForm() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const failCountRef = useRef(0);
+  const lockedUntilRef = useRef(0);
 
   const {
     register,
@@ -29,6 +34,13 @@ export function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
 
+    // Rate limiting: block after 5 consecutive failures for 30 seconds
+    if (Date.now() < lockedUntilRef.current) {
+      const secondsLeft = Math.ceil((lockedUntilRef.current - Date.now()) / 1000);
+      setServerError(`Too many attempts. Please wait ${secondsLeft}s.`);
+      return;
+    }
+
     try {
       const result = await signIn('credentials', {
         email: data.email,
@@ -37,10 +49,18 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        setServerError('Invalid email or password. Please try again.');
+        failCountRef.current += 1;
+        if (failCountRef.current >= 5) {
+          lockedUntilRef.current = Date.now() + 30_000;
+          failCountRef.current = 0;
+          setServerError('Too many failed attempts. Please wait 30 seconds.');
+        } else {
+          setServerError('Invalid email or password. Please try again.');
+        }
         return;
       }
 
+      failCountRef.current = 0;
       router.push(APP_ROUTES.dashboard);
       router.refresh();
     } catch {
@@ -81,48 +101,28 @@ export function LoginForm() {
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Email */}
-        <div className="space-y-2.5">
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-[var(--color-text-primary)]"
-          >
-            Email address
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="you@company.com"
-            autoComplete="email"
-            aria-invalid={!!errors.email}
-            className="block h-[48px] w-full rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] px-4 text-[15px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-teal-500 focus:bg-[var(--color-bg-primary)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition-all"
-            {...register('email')}
-          />
-          {errors.email?.message && (
-            <p className="text-xs text-red-500 pl-1">{errors.email.message}</p>
-          )}
-        </div>
+        <Input
+          id="email"
+          type="email"
+          label="Email address"
+          placeholder="you@company.com"
+          autoComplete="email"
+          error={errors.email?.message}
+          className={loginInputClass}
+          {...register('email')}
+        />
 
         {/* Password */}
-        <div className="space-y-2.5">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-[var(--color-text-primary)]"
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            aria-invalid={!!errors.password}
-            className="block h-[48px] w-full rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] px-4 text-[15px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-teal-500 focus:bg-[var(--color-bg-primary)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition-all"
-            {...register('password')}
-          />
-          {errors.password?.message && (
-            <p className="text-xs text-red-500 pl-1">{errors.password.message}</p>
-          )}
-        </div>
+        <Input
+          id="password"
+          type="password"
+          label="Password"
+          placeholder="Enter your password"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          className={loginInputClass}
+          {...register('password')}
+        />
 
         {/* Submit button */}
         <div className="pt-2">

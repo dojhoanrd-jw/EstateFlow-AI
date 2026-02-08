@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { useEffect, useRef, useCallback, type ReactNode, type KeyboardEvent } from 'react';
 import { cn } from '@/frontend/lib/utils';
 import { X } from 'lucide-react';
 
@@ -59,6 +59,7 @@ export function Modal({
   size = 'md',
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // Sync open state with the native dialog
   useEffect(() => {
@@ -67,6 +68,11 @@ export function Modal({
 
     if (isOpen && !dialog.open) {
       dialog.showModal();
+      // Move focus into the panel content
+      const focusable = panelRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      focusable?.focus();
     } else if (!isOpen && dialog.open) {
       dialog.close();
     }
@@ -122,6 +128,7 @@ export function Modal({
       )}
     >
       <div
+        ref={panelRef}
         className={cn(
           'relative mx-4 w-full rounded-xl',
           'bg-[var(--color-bg-elevated)] shadow-[var(--shadow-xl)]',

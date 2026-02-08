@@ -1,10 +1,23 @@
 import { db } from '@/backend/server/db/client';
+import { buildUpdateQuery } from '@/backend/server/db/build-update-query';
 import type { Conversation, ConversationWithLead } from '@/shared/types';
 import type {
   CreateConversationInput,
   UpdateConversationInput,
   ConversationFilters,
 } from '@/shared/validations/schemas';
+
+// ---------------------------------------------------------------------------
+// Column mapping for dynamic updates
+// ---------------------------------------------------------------------------
+
+const UPDATABLE_COLUMNS: Record<keyof UpdateConversationInput, string> = {
+  status: 'status',
+  is_read: 'is_read',
+  ai_summary: 'ai_summary',
+  ai_priority: 'ai_priority',
+  ai_tags: 'ai_tags',
+};
 
 // ---------------------------------------------------------------------------
 // SQL Fragments
@@ -42,7 +55,7 @@ const SELECT_CONVERSATION_WITH_LEAD = `
   LEFT JOIN LATERAL (
     SELECT
       COUNT(*)::int AS message_count,
-      COUNT(*) FILTER (WHERE NOT m.is_read)::int AS unread_count
+      COUNT(*) FILTER (WHERE NOT m.is_read AND m.sender_type = 'lead')::int AS unread_count
     FROM messages m
     WHERE m.conversation_id = c.id
   ) mc ON true
@@ -186,7 +199,8 @@ export const conversationRepository = {
       data.lead_id,
       data.assigned_agent_id,
     ]);
-    return result!;
+    if (!result) throw new Error('INSERT did not return a row');
+    return result;
   },
 
   /**
@@ -197,46 +211,9 @@ export const conversationRepository = {
     id: string,
     data: UpdateConversationInput,
   ): Promise<Conversation | null> {
-    const setClauses: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
-
-    if (data.status !== undefined) {
-      setClauses.push(`status = $${paramIndex++}`);
-      params.push(data.status);
-    }
-    if (data.is_read !== undefined) {
-      setClauses.push(`is_read = $${paramIndex++}`);
-      params.push(data.is_read);
-    }
-    if (data.ai_summary !== undefined) {
-      setClauses.push(`ai_summary = $${paramIndex++}`);
-      params.push(data.ai_summary);
-    }
-    if (data.ai_priority !== undefined) {
-      setClauses.push(`ai_priority = $${paramIndex++}`);
-      params.push(data.ai_priority);
-    }
-    if (data.ai_tags !== undefined) {
-      setClauses.push(`ai_tags = $${paramIndex++}`);
-      params.push(data.ai_tags);
-    }
-
-    if (setClauses.length === 0) {
-      return this.findById(id) as Promise<Conversation | null>;
-    }
-
-    setClauses.push(`updated_at = NOW()`);
-
-    const text = `
-      UPDATE conversations
-      SET ${setClauses.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-    params.push(id);
-
-    return db.queryOne<Conversation>(text, params);
+    const query = buildUpdateQuery('conversations', id, data, UPDATABLE_COLUMNS);
+    if (!query) return this.findById(id) as Promise<Conversation | null>;
+    return db.queryOne<Conversation>(query.text, query.params);
   },
 
   /**

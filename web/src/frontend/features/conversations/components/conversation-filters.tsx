@@ -131,6 +131,7 @@ export function ConversationFilters({
         />
         <input
           type="text"
+          aria-label="Search conversations"
           placeholder="Search conversations..."
           value={searchInput}
           onChange={handleSearchChange}

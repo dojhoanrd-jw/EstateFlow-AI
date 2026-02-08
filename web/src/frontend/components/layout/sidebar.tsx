@@ -2,31 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import {
-  LayoutDashboard,
-  MessageSquare,
-  LogOut,
-  Building2,
-} from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
-import { Avatar } from '@/frontend/components/ui/avatar';
-import { NAV_ITEMS, type NavItem } from '@/frontend/config/navigation';
-import type { UserRole } from '@/shared/types';
-
-// ============================================
-// Icon resolver
-// ============================================
-
-const iconMap = {
-  LayoutDashboard,
-  MessageSquare,
-} as const;
-
-function NavIcon({ name, className }: { name: NavItem['icon']; className?: string }) {
-  const Icon = iconMap[name];
-  return <Icon className={className} size={20} />;
-}
+import { NavIcon } from '@/frontend/components/layout/nav-icon';
+import { NAV_ITEMS } from '@/frontend/config/navigation';
+import { UserSection } from '@/frontend/components/layout/user-section';
 
 // ============================================
 // Sidebar Component
@@ -34,15 +14,6 @@ function NavIcon({ name, className }: { name: NavItem['icon']; className?: strin
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
-
-  const user = session?.user as
-    | { name?: string; email?: string; role?: UserRole; image?: string }
-    | undefined;
-
-  const userName = user?.name ?? 'User';
-  const userRole = user?.role ?? 'agent';
-  const userAvatar = user?.image ?? null;
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-800 bg-slate-900 lg:flex">
@@ -69,6 +40,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium',
                 'transition-all duration-[var(--transition-fast)]',
@@ -96,34 +68,7 @@ export function Sidebar() {
       </nav>
 
       {/* ---- User section ---- */}
-      <div className="border-t border-slate-800 p-4">
-        <div className="flex items-center gap-3">
-          <Avatar name={userName} src={userAvatar} size="sm" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-white">
-              {userName}
-            </p>
-            <span
-              className={cn(
-                'inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
-                userRole === 'admin'
-                  ? 'bg-amber-500/15 text-amber-400'
-                  : 'bg-teal-500/15 text-teal-400',
-              )}
-            >
-              {userRole}
-            </span>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors duration-[var(--transition-fast)] hover:bg-slate-800 hover:text-red-400"
-            aria-label="Sign out"
-            title="Sign out"
-          >
-            <LogOut size={16} />
-          </button>
-        </div>
-      </div>
+      <UserSection variant="sidebar" />
     </aside>
   );
 }

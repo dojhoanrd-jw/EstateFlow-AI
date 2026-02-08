@@ -1,22 +1,18 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { MessageSquare } from 'lucide-react';
 import { parseISO, format, isSameDay } from 'date-fns';
 import { Skeleton } from '@/frontend/components/ui/skeleton';
 import { cn } from '@/frontend/lib/utils';
 import { MessageBubble } from './message-bubble';
 import { TypingIndicator } from './typing-indicator';
-import type { MessageWithSender } from '@/shared/types';
+import type { MessageWithSender, TypingUser } from '@/shared/types';
 
 // ============================================
 // Types
 // ============================================
-
-interface TypingUser {
-  user_name: string;
-  is_typing: boolean;
-}
 
 interface MessageThreadProps {
   messages: MessageWithSender[];
@@ -24,6 +20,30 @@ interface MessageThreadProps {
   typingUsers: TypingUser[];
   conversationId: string | null;
   className?: string;
+}
+
+type ThreadItem =
+  | { type: 'date'; date: string }
+  | { type: 'message'; message: MessageWithSender };
+
+// ============================================
+// Build flat item list with date separators
+// ============================================
+
+function buildItems(messages: MessageWithSender[]): ThreadItem[] {
+  const items: ThreadItem[] = [];
+  let lastDate: string | null = null;
+
+  for (const message of messages) {
+    const messageDate = message.created_at.split('T')[0] ?? '';
+    if (messageDate !== lastDate) {
+      items.push({ type: 'date', date: message.created_at });
+      lastDate = messageDate;
+    }
+    items.push({ type: 'message', message });
+  }
+
+  return items;
 }
 
 // ============================================
@@ -46,7 +66,7 @@ function DateSeparator({ date }: { date: string }) {
   }
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <div className="flex items-center gap-3 py-3">
       <div className="h-px flex-1 bg-[var(--color-border-subtle)]" />
       <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
         {label}
@@ -118,6 +138,24 @@ export function MessageThread({
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Flatten messages into renderable items (date separators + messages)
+  const items = useMemo(() => buildItems(messages), [messages]);
+
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: (index) => {
+      const item = items[index];
+      return item?.type === 'date' ? 44 : 80;
+    },
+    overscan: 10,
+    getItemKey: (index) => {
+      const item = items[index];
+      if (!item) return index;
+      return item.type === 'date' ? `date-${item.date}` : item.message.id;
+    },
+  });
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (bottomRef.current) {
@@ -150,27 +188,51 @@ export function MessageThread({
     );
   }
 
-  // Group messages by day for date separators
-  let lastDate: string | null = null;
-
   return (
     <div className={cn('flex-1 overflow-y-auto', className)} ref={scrollRef}>
-      <div className="space-y-3 p-4">
-        {messages.map((message) => {
-          const messageDate = message.created_at.split('T')[0];
-          const showDateSeparator = messageDate !== lastDate;
-          lastDate = messageDate;
+      <div aria-live="polite" aria-relevant="additions">
+        {/* Virtualized message list */}
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const item = items[virtualRow.index];
+            if (!item) return null;
 
-          return (
-            <div key={message.id}>
-              {showDateSeparator && <DateSeparator date={message.created_at} />}
-              <MessageBubble message={message} />
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+                className="px-4 py-1.5"
+              >
+                {item.type === 'date' ? (
+                  <DateSeparator date={item.date} />
+                ) : (
+                  <MessageBubble message={item.message} />
+                )}
+              </div>
+            );
+          })}
+        </div>
 
         {/* Typing indicator */}
-        {typingUsers.length > 0 && <TypingIndicator typingUsers={typingUsers} />}
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-1.5">
+            <TypingIndicator typingUsers={typingUsers} />
+          </div>
+        )}
 
         {/* Scroll anchor */}
         <div ref={bottomRef} />

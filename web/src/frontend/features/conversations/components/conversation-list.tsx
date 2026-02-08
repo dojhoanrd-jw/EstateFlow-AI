@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { MessageSquare } from 'lucide-react';
 import { Skeleton, SkeletonText } from '@/frontend/components/ui/skeleton';
 import { cn } from '@/frontend/lib/utils';
@@ -87,6 +89,15 @@ export function ConversationList({
   className,
 }: ConversationListProps) {
   const hasFilters = Boolean(filters.priority || filters.tag || filters.search);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: conversations.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 88,
+    overscan: 8,
+    getItemKey: (index) => conversations[index]?.id ?? index,
+  });
 
   return (
     <div
@@ -123,20 +134,45 @@ export function ConversationList({
       </div>
 
       {/* Scrollable list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" ref={scrollRef}>
         {isLoading ? (
           <ConversationListSkeleton />
         ) : conversations.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
-          conversations.map((conversation) => (
-            <ConversationItem
-              key={conversation.id}
-              conversation={conversation}
-              isSelected={selectedId === conversation.id}
-              onClick={onSelectConversation}
-            />
-          ))
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const conversation = conversations[virtualRow.index];
+              if (!conversation) return null;
+
+              return (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                >
+                  <ConversationItem
+                    conversation={conversation}
+                    isSelected={selectedId === conversation.id}
+                    onClick={onSelectConversation}
+                  />
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

@@ -138,7 +138,8 @@ export const messageRepository = {
       data.content,
       data.content_type,
     ]);
-    return result!;
+    if (!result) throw new Error('INSERT did not return a row');
+    return result;
   },
 
   /**

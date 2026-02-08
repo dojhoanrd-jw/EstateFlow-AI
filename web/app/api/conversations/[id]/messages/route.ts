@@ -1,1 +1,1 @@
-export { GET, POST } from "@/backend/features/messages/message.handlers";
+export { GET, POST, PATCH } from "@/backend/features/conversations/messages/message.handlers";

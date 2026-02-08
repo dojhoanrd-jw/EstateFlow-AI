@@ -1,13 +1,27 @@
 'use client';
 
-import { MessageSquare, MessageCircle, Flame, Clock, RefreshCw } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { MessageSquare, MessageCircle, Flame, Clock } from 'lucide-react';
 import { Skeleton } from '@/frontend/components/ui/skeleton';
 import { Card, CardHeader, CardBody } from '@/frontend/components/ui/card';
+import { ErrorState } from '@/frontend/components/ui/error-state';
+import { MESSAGES } from '@/shared/messages';
 import { useDashboard } from '../hooks/use-dashboard';
 import { StatsCard } from '../components/stats-card';
-import { PriorityChart } from '../components/priority-chart';
-import { AgentPerformance } from '../components/agent-performance';
-import { TopTags } from '../components/top-tags';
+
+// Code-split heavy chart components — only loaded after dashboard data arrives
+const PriorityChart = dynamic(
+  () => import('../components/priority-chart').then((m) => m.PriorityChart),
+  { ssr: false },
+);
+const AgentPerformance = dynamic(
+  () => import('../components/agent-performance').then((m) => m.AgentPerformance),
+  { ssr: false },
+);
+const TopTags = dynamic(
+  () => import('../components/top-tags').then((m) => m.TopTags),
+  { ssr: false },
+);
 
 // ============================================
 // Skeleton loaders
@@ -124,27 +138,12 @@ export function DashboardPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center p-6">
-        <div className="text-center space-y-4">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
-            <MessageCircle size={24} className="text-red-500" />
-          </div>
-          <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
-            Failed to load dashboard
-          </h3>
-          <p className="text-sm text-[var(--color-text-tertiary)] max-w-xs mx-auto">
-            We couldn&apos;t fetch your dashboard data. Please check your connection and try again.
-          </p>
-          <button
-            type="button"
-            onClick={() => mutate()}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent-600)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-accent-700)] transition-colors"
-          >
-            <RefreshCw size={14} />
-            Retry
-          </button>
-        </div>
-      </div>
+      <ErrorState
+        title="Failed to load dashboard"
+        description={MESSAGES.general.serverError}
+        onRetry={() => mutate()}
+        className="min-h-[60vh] p-6"
+      />
     );
   }
 

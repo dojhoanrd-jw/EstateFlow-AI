@@ -24,6 +24,12 @@ export class ApiError extends Error {
 
 async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    // Session expired — redirect to login
+    if (response.status === 401 && typeof window !== 'undefined') {
+      window.location.href = '/login';
+      return new Promise(() => {}); // hang to avoid further processing
+    }
+
     let errorData: ApiErrorResponse | null = null;
 
     try {
@@ -97,6 +103,19 @@ export async function apiPost<T>(url: string, body?: unknown): Promise<T> {
 export async function apiPut<T>(url: string, body?: unknown): Promise<T> {
   const response = await fetch(url, {
     method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  return parseResponse<T>(response);
+}
+
+export async function apiPatch<T>(url: string, body?: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },

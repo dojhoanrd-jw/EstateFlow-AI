@@ -1,8 +1,10 @@
 'use client';
 
+import { memo } from 'react';
 import { Avatar } from '@/frontend/components/ui/avatar';
 import { Badge } from '@/frontend/components/ui/badge';
 import { cn, formatDate } from '@/frontend/lib/utils';
+import { useTimestamp } from '@/frontend/hooks/use-timestamp';
 import type { ConversationWithLead } from '@/shared/types';
 
 // ============================================
@@ -19,11 +21,13 @@ interface ConversationItemProps {
 // Component
 // ============================================
 
-export function ConversationItem({
+export const ConversationItem = memo(function ConversationItem({
   conversation,
   isSelected,
   onClick,
 }: ConversationItemProps) {
+  useTimestamp();
+
   const {
     id,
     lead_name,
@@ -42,6 +46,7 @@ export function ConversationItem({
     <button
       type="button"
       onClick={() => onClick(id)}
+      aria-current={isSelected ? 'true' : undefined}
       className={cn(
         'group w-full text-left px-4 py-3',
         'border-b border-[var(--color-border-subtle)]',
@@ -57,7 +62,11 @@ export function ConversationItem({
         <div className="relative shrink-0">
           <Avatar name={lead_name} size="sm" />
           {hasUnread && (
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-[var(--color-accent-600)] ring-2 ring-[var(--color-bg-elevated)]" />
+            <span
+              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-[var(--color-accent-600)] ring-2 ring-[var(--color-bg-elevated)]"
+              role="status"
+              aria-label={`${unread_count} unread message${unread_count !== 1 ? 's' : ''}`}
+            />
           )}
         </div>
 
@@ -117,4 +126,4 @@ export function ConversationItem({
       </div>
     </button>
   );
-}
+});

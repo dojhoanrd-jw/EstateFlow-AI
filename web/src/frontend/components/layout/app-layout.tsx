@@ -30,6 +30,14 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-secondary)]">
+      {/* ---- Skip navigation link ---- */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--color-accent-600)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
+      >
+        Skip to content
+      </a>
+
       {/* ---- Desktop sidebar ---- */}
       <Sidebar />
 
@@ -40,7 +48,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <MobileNav isOpen={mobileNavOpen} onClose={handleMobileNavClose} />
 
       {/* ---- Main content area ---- */}
-      <main className="pt-14 lg:ml-64 lg:pt-0 min-h-screen">
+      <main id="main-content" className="pt-14 lg:ml-64 lg:pt-0 min-h-screen">
         {children}
       </main>
     </div>

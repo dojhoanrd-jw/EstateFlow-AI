@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { API_ROUTES } from '@/shared/routes/api.routes';
 import { apiPost } from '@/frontend/lib/fetcher';
@@ -11,7 +11,12 @@ import { useSocket } from './use-socket';
 // useMessages hook (WebSocket-powered)
 // ============================================
 
-export function useMessages(conversationId: string | null) {
+export function useMessages(
+  conversationId: string | null,
+  onIncomingMessage?: (msg: MessageWithSender) => void,
+) {
+  const onIncomingRef = useRef(onIncomingMessage);
+  onIncomingRef.current = onIncomingMessage;
   const url = conversationId
     ? API_ROUTES.conversations.messages(conversationId)
     : null;
@@ -41,6 +46,9 @@ export function useMessages(conversationId: string | null) {
         },
         { revalidate: false },
       );
+
+      // Notify parent for optimistic conversation list updates
+      if (onIncomingRef.current) onIncomingRef.current(newMsg);
     });
   }, [onMessage, mutate]);
 

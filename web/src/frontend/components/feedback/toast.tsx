@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useMemo,
   useRef,
   useEffect,
   type ReactNode,
@@ -169,12 +170,15 @@ export function ToastProvider({ children }: ToastProviderProps) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const ctx: ToastContextValue = {
-    toast: addToast,
-    success: (msg, dur) => addToast(msg, 'success', dur),
-    error: (msg, dur) => addToast(msg, 'error', dur),
-    info: (msg, dur) => addToast(msg, 'info', dur),
-  };
+  const ctx: ToastContextValue = useMemo(
+    () => ({
+      toast: addToast,
+      success: (msg: string, dur?: number) => addToast(msg, 'success', dur),
+      error: (msg: string, dur?: number) => addToast(msg, 'error', dur),
+      info: (msg: string, dur?: number) => addToast(msg, 'info', dur),
+    }),
+    [addToast],
+  );
 
   return (
     <ToastContext.Provider value={ctx}>

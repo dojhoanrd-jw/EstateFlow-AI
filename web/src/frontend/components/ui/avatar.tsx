@@ -42,12 +42,19 @@ const avatarColors = [
   'bg-amber-600',
 ];
 
+const avatarColorCache = new Map<string, string>();
+
 function getAvatarColor(name: string): string {
+  const cached = avatarColorCache.get(name);
+  if (cached) return cached;
+
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
   }
-  return avatarColors[Math.abs(hash) % avatarColors.length];
+  const color = avatarColors[Math.abs(hash) % avatarColors.length] ?? 'bg-teal-600';
+  avatarColorCache.set(name, color);
+  return color;
 }
 
 // ============================================
@@ -57,11 +64,12 @@ function getAvatarColor(name: string): string {
 export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
   const initials = getInitials(name);
 
-  if (src) {
+  if (src && /^https?:\/\//i.test(src)) {
     return (
       <img
         src={src}
         alt={name}
+        referrerPolicy="no-referrer"
         className={cn(
           'inline-flex shrink-0 rounded-full object-cover',
           sizeClasses[size],

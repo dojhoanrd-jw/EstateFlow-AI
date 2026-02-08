@@ -1,21 +1,19 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ArrowLeft, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ArrowLeft, PanelRightOpen, PanelRightClose, WifiOff } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
-import { useConversations, type ConversationFilters } from '../hooks/use-conversations';
-import { useMessages } from '../hooks/use-messages';
-import { useTypingIndicator } from '../hooks/use-socket';
+import { ErrorState } from '@/frontend/components/ui/error-state';
+import { MESSAGES } from '@/shared/messages';
+import { useConversationPage } from '../hooks/use-conversation-page';
 import { ConversationList } from '../components/conversation-list';
 import { MessageThread } from '../components/message-thread';
 import { MessageComposer } from '../components/message-composer';
-import { LeadInfoPanel } from '@/frontend/features/leads/components/lead-info-panel';
 
-// ============================================
-// Mobile view enum
-// ============================================
-
-type MobileView = 'list' | 'chat' | 'info';
+const LeadInfoPanel = dynamic(
+  () => import('../components/lead-info-panel').then((m) => m.LeadInfoPanel),
+  { ssr: false },
+);
 
 // ============================================
 // ConversationsPage
@@ -32,87 +30,51 @@ type MobileView = 'list' | 'chat' | 'info';
 // ============================================
 
 export function ConversationsPage() {
-  // ----------------------------------------
-  // State
-  // ----------------------------------------
+  const {
+    selectedConversationId,
+    mobileView,
+    showInfoPanel,
+    filters,
+    conversations,
+    isLoadingConversations,
+    conversationsError,
+    messages,
+    isLoadingMessages,
+    isConnected,
+    selectedConversation,
+    typingUsers,
+    retryConversations,
+    handleSelectConversation,
+    handleBackToList,
+    handleToggleInfoPanel,
+    handleShowInfoMobile,
+    handleCloseInfoMobile,
+    handleSendMessage,
+    handleFilterChange,
+  } = useConversationPage();
 
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<ConversationFilters>({});
-  const [mobileView, setMobileView] = useState<MobileView>('list');
-  const [showInfoPanel, setShowInfoPanel] = useState(true);
-
-  // ----------------------------------------
-  // Data hooks
-  // ----------------------------------------
-
-  const { conversations, isLoading: isLoadingConversations, mutate: mutateConversations } = useConversations(filters);
-  const { messages, isLoading: isLoadingMessages, isConnected, onAiUpdate, sendMessage } = useMessages(selectedConversationId);
-
-  // Find the currently selected conversation object
-  const selectedConversation = useMemo(
-    () => conversations.find((c) => c.id === selectedConversationId) ?? null,
-    [conversations, selectedConversationId],
-  );
-
-  // Refresh conversation list when AI analysis completes
-  useEffect(() => {
-    onAiUpdate(() => {
-      mutateConversations();
-    });
-  }, [onAiUpdate, mutateConversations]);
-
-  // Typing indicator
-  const { typingUsers, emitTyping } = useTypingIndicator(selectedConversationId);
-
-  // ----------------------------------------
-  // Handlers
-  // ----------------------------------------
-
-  const handleSelectConversation = useCallback(
-    (id: string) => {
-      setSelectedConversationId(id);
-      setMobileView('chat');
-    },
-    [],
-  );
-
-  const handleBackToList = useCallback(() => {
-    setMobileView('list');
-  }, []);
-
-  const handleToggleInfoPanel = useCallback(() => {
-    setShowInfoPanel((prev) => !prev);
-  }, []);
-
-  const handleShowInfoMobile = useCallback(() => {
-    setMobileView('info');
-  }, []);
-
-  const handleCloseInfoMobile = useCallback(() => {
-    setMobileView('chat');
-  }, []);
-
-  const handleSendMessage = useCallback(
-    async (content: string) => {
-      await sendMessage(content);
-      // Simulate lead typing after agent sends a message
-      if (selectedConversation) {
-        emitTyping(selectedConversation.lead_name);
-      }
-    },
-    [sendMessage, emitTyping, selectedConversation],
-  );
-
-  const handleFilterChange = useCallback((newFilters: ConversationFilters) => {
-    setFilters(newFilters);
-  }, []);
-
-  // ----------------------------------------
-  // Render
-  // ----------------------------------------
+  if (conversationsError) {
+    return (
+      <ErrorState
+        title="Failed to load conversations"
+        description={MESSAGES.general.serverError}
+        onRetry={() => retryConversations()}
+        className="h-[calc(100vh-3.5rem)] lg:h-screen bg-[var(--color-bg-primary)]"
+      />
+    );
+  }
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] lg:h-screen overflow-hidden bg-[var(--color-bg-primary)]">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] lg:h-screen overflow-hidden bg-[var(--color-bg-primary)]">
+      {/* Offline / reconnecting banner */}
+      {selectedConversationId && !isConnected && (
+        <div className="flex shrink-0 items-center justify-center gap-2 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" role="status">
+          <WifiOff size={14} />
+          Reconnecting — messages may be delayed
+        </div>
+      )}
+
+      <div className="flex flex-1 min-h-0">
       {/* ============================================ */}
       {/* LEFT PANEL: Conversation List                */}
       {/* ============================================ */}
@@ -181,16 +143,9 @@ export function ConversationsPage() {
                 <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
                   {selectedConversation.lead_name}
                 </h2>
-                <div className="flex items-center gap-2 text-[10px] text-[var(--color-text-tertiary)]">
-                  <span>{selectedConversation.message_count} messages</span>
-                  <span className="flex items-center gap-1">
-                    <span className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      isConnected ? 'bg-emerald-500' : 'bg-amber-500',
-                    )} />
-                    {isConnected ? 'Live' : 'Connecting...'}
-                  </span>
-                </div>
+                <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                  {selectedConversation.message_count} messages
+                </span>
               </div>
             </div>
 
@@ -260,6 +215,7 @@ export function ConversationsPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

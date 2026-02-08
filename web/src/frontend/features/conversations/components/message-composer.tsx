@@ -106,6 +106,7 @@ export function MessageComposer({
       >
         <textarea
           ref={textareaRef}
+          aria-label="Type a message"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}

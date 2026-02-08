@@ -1,4 +1,6 @@
+import { memo } from 'react';
 import { cn, formatDate } from '@/frontend/lib/utils';
+import { useTimestamp } from '@/frontend/hooks/use-timestamp';
 import type { MessageWithSender } from '@/shared/types';
 
 // ============================================
@@ -13,7 +15,9 @@ interface MessageBubbleProps {
 // Component
 // ============================================
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
+  useTimestamp();
+
   const { sender_type, sender_name, content, content_type, created_at } = message;
 
   const isAgent = sender_type === 'agent';
@@ -46,12 +50,17 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
         {/* Content */}
         {content_type === 'image' ? (
-          <img
-            src={content}
-            alt="Shared image"
-            className="max-h-64 rounded-lg object-cover"
-            loading="lazy"
-          />
+          /^https?:\/\//i.test(content) ? (
+            <img
+              src={content}
+              alt="Shared image"
+              className="max-h-64 rounded-lg object-cover"
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <p className="text-sm italic opacity-60">Invalid image</p>
+          )
         ) : (
           <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
             {content}
@@ -70,4 +79,4 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       </div>
     </div>
   );
-}
+});
