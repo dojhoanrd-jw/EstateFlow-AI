@@ -1,5 +1,3 @@
-"""EstateFlow AI Service -- FastAPI application entry-point."""
-
 from __future__ import annotations
 
 import logging
@@ -22,20 +20,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Lifespan (startup / shutdown)
-# ---------------------------------------------------------------------------
-
-
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Application lifespan handler.
-
-    On startup:
-    - Check whether the ``project_embeddings`` table already has data.
-    - If empty, auto-ingest the bundled JSON project files so the RAG
-      pipeline is ready to go from the first request.
-    """
     logger.info("EstateFlow AI Service starting up...")
 
     try:
@@ -61,14 +47,9 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
             exc_info=True,
         )
 
-    yield  # Application is running
+    yield
 
     logger.info("EstateFlow AI Service shutting down.")
-
-
-# ---------------------------------------------------------------------------
-# App factory
-# ---------------------------------------------------------------------------
 
 
 app = FastAPI(
@@ -82,7 +63,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS -- restrict in production, allow everything in dev
 _origins: list[str] = (
     [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
     if settings.CORS_ORIGINS
@@ -98,14 +78,8 @@ app.add_middleware(
 )
 
 
-# ---------------------------------------------------------------------------
-# Request logging middleware
-# ---------------------------------------------------------------------------
-
-
 @app.middleware("http")
 async def log_requests(request: Request, call_next) -> Response:  # type: ignore[type-arg]
-    """Log every HTTP request with method, path, status and duration."""
     start = time.perf_counter()
     response: Response = await call_next(request)
     duration_ms = (time.perf_counter() - start) * 1_000

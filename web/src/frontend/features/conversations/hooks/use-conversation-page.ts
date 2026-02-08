@@ -8,29 +8,10 @@ import { useTypingIndicator } from './use-socket';
 import { useMobileNavigation } from './use-mobile-navigation';
 import { useConversationSync } from './use-conversation-sync';
 
-// ============================================
-// useConversationPage
-//
-// Composes sub-hooks into a single facade for
-// ConversationsPage. Each concern is isolated:
-//   - useMobileNavigation  → mobile view + Escape
-//   - useConversationSync  → optimistic patches
-//   - useMessages          → REST + WebSocket msgs
-//   - useTypingIndicator   → typing dots
-// ============================================
-
 export function useConversationPage() {
-  // ----------------------------------------
-  // State
-  // ----------------------------------------
-
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [filters, setFilters] = useState<ConversationFilters>({});
   const [showInfoPanel, setShowInfoPanel] = useState(true);
-
-  // ----------------------------------------
-  // Sub-hooks
-  // ----------------------------------------
 
   const { conversations, isLoading: isLoadingConversations, error: conversationsError, mutate: mutateConversations } = useConversations(filters);
 
@@ -42,25 +23,16 @@ export function useConversationPage() {
 
   const { typingUsers, emitTyping } = useTypingIndicator(selectedConversationId);
 
-  // ----------------------------------------
-  // Derived data
-  // ----------------------------------------
-
   const selectedConversation = useMemo<ConversationWithLead | null>(
     () => conversations.find((c) => c.id === selectedConversationId) ?? null,
     [conversations, selectedConversationId],
   );
 
-  // Refresh conversation list when AI analysis completes
   useEffect(() => {
     onAiUpdate(() => {
       mutateConversations();
     });
   }, [onAiUpdate, mutateConversations]);
-
-  // ----------------------------------------
-  // Handlers
-  // ----------------------------------------
 
   const handleSelectConversation = useCallback(
     (id: string) => {
@@ -89,18 +61,11 @@ export function useConversationPage() {
     setFilters(newFilters);
   }, []);
 
-  // ----------------------------------------
-  // Return
-  // ----------------------------------------
-
   return {
-    // State
     selectedConversationId,
     mobileView: mobile.mobileView,
     showInfoPanel,
     filters,
-
-    // Data
     conversations,
     isLoadingConversations,
     conversationsError,
@@ -111,8 +76,6 @@ export function useConversationPage() {
     selectedConversation,
     typingUsers,
     retryConversations: mutateConversations,
-
-    // Handlers
     handleSelectConversation,
     handleBackToList: mobile.handleBackToList,
     handleToggleInfoPanel,

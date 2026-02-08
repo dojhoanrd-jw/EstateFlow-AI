@@ -2,10 +2,6 @@ import { Tags } from 'lucide-react';
 import { cn, getTagColor } from '@/frontend/lib/utils';
 import { Card, CardHeader, CardTitle, CardBody } from '@/frontend/components/ui/card';
 
-// ============================================
-// Types
-// ============================================
-
 interface TagData {
   tag: string;
   count: number;
@@ -15,10 +11,6 @@ interface TopTagsProps {
   tags: TagData[];
   className?: string;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function TopTags({ tags, className }: TopTagsProps) {
   const maxCount = tags.length > 0 ? Math.max(...tags.map((t) => t.count)) : 1;
@@ -39,7 +31,6 @@ export function TopTags({ tags, className }: TopTagsProps) {
 
           return (
             <div key={item.tag} className="space-y-1.5">
-              {/* Label row */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[var(--color-text-tertiary)] tabular-nums w-4">
@@ -60,7 +51,6 @@ export function TopTags({ tags, className }: TopTagsProps) {
                 </span>
               </div>
 
-              {/* Mini bar */}
               <div className="ml-6 h-1.5 w-auto overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
                 <div
                   className="h-full rounded-full bg-[var(--color-text-tertiary)]/30 transition-all duration-700 ease-out"
@@ -80,7 +70,6 @@ export function TopTags({ tags, className }: TopTagsProps) {
           </div>
         )}
 
-        {/* Tag cloud summary */}
         {tags.length > 0 && (
           <div className="pt-3 border-t border-[var(--color-border-subtle)]">
             <div className="flex flex-wrap gap-1.5">

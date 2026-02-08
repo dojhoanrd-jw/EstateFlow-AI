@@ -1,10 +1,6 @@
 import { cn, getPriorityColor, getTagColor } from '@/frontend/lib/utils';
 import type { ConversationPriority } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 type BadgeVariant = 'default' | 'priority' | 'tag';
 
 interface BadgeBaseProps {
@@ -27,10 +23,6 @@ interface BadgeTagProps extends BadgeBaseProps {
 }
 
 type BadgeProps = BadgeDefaultProps | BadgePriorityProps | BadgeTagProps;
-
-// ============================================
-// Component
-// ============================================
 
 export function Badge(props: BadgeProps) {
   const { className, children } = props;

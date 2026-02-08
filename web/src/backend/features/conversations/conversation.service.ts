@@ -9,15 +9,7 @@ import type {
   ConversationFilters,
 } from '@/shared/validations/schemas';
 
-// ---------------------------------------------------------------------------
-// Service
-// ---------------------------------------------------------------------------
-
 export const conversationService = {
-  /**
-   * Get a paginated list of conversations.
-   * Admins see all conversations; agents only see their own.
-   */
   async getConversations(
     userId: string,
     role: UserRole,
@@ -41,9 +33,6 @@ export const conversationService = {
     };
   },
 
-  /**
-   * Get a single conversation by ID with RBAC enforcement.
-   */
   async getConversationById(
     id: string,
     userId: string,
@@ -60,26 +49,18 @@ export const conversationService = {
     return conversation;
   },
 
-  /**
-   * Create a new conversation.
-   */
   async createConversation(
     data: CreateConversationInput,
   ): Promise<Conversation> {
     return conversationRepository.create(data);
   },
 
-  /**
-   * Update a conversation with RBAC enforcement.
-   * Agents can only update conversations assigned to them.
-   */
   async updateConversation(
     id: string,
     data: UpdateConversationInput,
     userId: string,
     role: UserRole,
   ): Promise<Conversation> {
-    // Verify existence and ownership before updating
     const existing = await conversationRepository.findById(id);
 
     if (!existing) {
@@ -97,9 +78,6 @@ export const conversationService = {
     return updated;
   },
 
-  /**
-   * Archive a conversation (soft delete).
-   */
   async archiveConversation(
     id: string,
     userId: string,

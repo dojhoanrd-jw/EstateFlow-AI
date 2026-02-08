@@ -3,17 +3,9 @@ import { cn, formatDate } from '@/frontend/lib/utils';
 import { useTimestamp } from '@/frontend/hooks/use-timestamp';
 import type { MessageWithSender } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 interface MessageBubbleProps {
   message: MessageWithSender;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
   useTimestamp();
@@ -38,7 +30,6 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
             : 'rounded-bl-md bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)]',
         )}
       >
-        {/* Sender name */}
         <p
           className={cn(
             'mb-1 text-[10px] font-semibold leading-none',
@@ -48,7 +39,6 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
           {sender_name}
         </p>
 
-        {/* Content */}
         {content_type === 'image' ? (
           /^https?:\/\//i.test(content) ? (
             <img
@@ -67,7 +57,6 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
           </p>
         )}
 
-        {/* Timestamp */}
         <p
           className={cn(
             'mt-1 text-right text-[10px] leading-none',

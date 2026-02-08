@@ -4,14 +4,7 @@ import { paginationMeta } from '@/shared/validations/common';
 import type { Lead } from '@/shared/types';
 import type { CreateLeadInput, UpdateLeadInput } from '@/shared/validations/schemas';
 
-// ---------------------------------------------------------------------------
-// Service
-// ---------------------------------------------------------------------------
-
 export const leadService = {
-  /**
-   * Get a paginated list of all leads with pagination metadata.
-   */
   async getLeads(
     page: number,
     limit: number,
@@ -30,9 +23,6 @@ export const leadService = {
     };
   },
 
-  /**
-   * Get a single lead by ID or throw a 404 ApiError.
-   */
   async getLeadById(id: string): Promise<Lead> {
     const lead = await leadRepository.findById(id);
 
@@ -43,17 +33,10 @@ export const leadService = {
     return lead;
   },
 
-  /**
-   * Create a new lead and return the persisted row.
-   */
   async createLead(data: CreateLeadInput): Promise<Lead> {
     return leadRepository.create(data);
   },
 
-  /**
-   * Update an existing lead. Verifies the lead exists before applying changes.
-   * Only the fields present in `data` will be modified.
-   */
   async updateLead(id: string, data: UpdateLeadInput): Promise<Lead> {
     const existing = await leadRepository.findById(id);
 

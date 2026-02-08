@@ -1,10 +1,6 @@
 import { db } from '@/backend/server/db/client';
 import type { DashboardStats } from '@/shared/types';
 
-// ---------------------------------------------------------------------------
-// Row types returned by the individual CTEs / queries
-// ---------------------------------------------------------------------------
-
 interface SummaryRow {
   total_conversations: number;
   unreplied_conversations: number;
@@ -32,19 +28,6 @@ interface AvgResponseRow {
   avg_response_time_minutes: number;
 }
 
-// ---------------------------------------------------------------------------
-// SQL: Summary statistics
-// ---------------------------------------------------------------------------
-
-/**
- * Uses CTEs and FILTER clauses to compute headline metrics in a single scan.
- *
- * - `last_msg` identifies the most recent message per conversation using
- *   a window function (ROW_NUMBER) so we can determine "unreplied" status
- *   without correlated subqueries.
- * - Conditional aggregation via FILTER avoids multiple passes over the data.
- * - The optional $1 parameter scopes results to a single agent when non-null.
- */
 const SQL_SUMMARY = `
   WITH last_msg AS (
     SELECT
@@ -76,14 +59,6 @@ const SQL_SUMMARY = `
   FROM conv_status
 `;
 
-// ---------------------------------------------------------------------------
-// SQL: Conversations grouped by priority
-// ---------------------------------------------------------------------------
-
-/**
- * Conditional aggregation using FILTER to pivot priority counts into columns
- * in a single pass without CASE expressions.
- */
 const SQL_BY_PRIORITY = `
   SELECT
     COALESCE(c.ai_priority, 'medium') AS priority,
@@ -100,17 +75,6 @@ const SQL_BY_PRIORITY = `
     END
 `;
 
-// ---------------------------------------------------------------------------
-// SQL: Conversations grouped by agent
-// ---------------------------------------------------------------------------
-
-/**
- * JOINs users to get the agent name and uses a correlated lateral subquery
- * via FILTER on a window-based CTE to count unreplied conversations per agent.
- *
- * The CTE `last_msg_per_conv` uses ROW_NUMBER to efficiently pick the latest
- * message per conversation, avoiding a DISTINCT ON or MAX subquery.
- */
 const SQL_BY_AGENT = `
   WITH last_msg_per_conv AS (
     SELECT
@@ -137,14 +101,6 @@ const SQL_BY_AGENT = `
   ORDER BY count DESC
 `;
 
-// ---------------------------------------------------------------------------
-// SQL: Top tags
-// ---------------------------------------------------------------------------
-
-/**
- * UNNEST expands the ai_tags array column so each tag becomes its own row.
- * We GROUP BY the unnested tag, count occurrences, and take the top 10.
- */
 const SQL_TOP_TAGS = `
   SELECT
     tag,
@@ -161,24 +117,6 @@ const SQL_TOP_TAGS = `
   LIMIT 10
 `;
 
-// ---------------------------------------------------------------------------
-// SQL: Average response time
-// ---------------------------------------------------------------------------
-
-/**
- * Calculates the average agent response time in minutes.
- *
- * Strategy:
- *  1. Use LAG() window function to get the previous message's sender_type
- *     and timestamp within each conversation, ordered chronologically.
- *  2. Identify "response" rows: messages where the sender is 'agent' and
- *     the previous message was from 'lead'.
- *  3. Compute the time difference (in minutes) between each lead message
- *     and the agent's reply.
- *  4. Average all those deltas.
- *
- * This avoids self-joins and correlated subqueries.
- */
 const SQL_AVG_RESPONSE_TIME = `
   WITH message_pairs AS (
     SELECT
@@ -213,10 +151,6 @@ const SQL_AVG_RESPONSE_TIME = `
     AND prev_sender_type = 'lead'
 `;
 
-// ---------------------------------------------------------------------------
-// In-memory cache (TTL = 30s) — avoids re-running 5 heavy queries per request
-// ---------------------------------------------------------------------------
-
 const CACHE_TTL_MS = 30_000;
 
 interface CacheEntry {
@@ -226,19 +160,7 @@ interface CacheEntry {
 
 const statsCache = new Map<string, CacheEntry>();
 
-// ---------------------------------------------------------------------------
-// Repository
-// ---------------------------------------------------------------------------
-
 export const dashboardRepository = {
-  /**
-   * Fetch all dashboard statistics. When `agentId` is provided, all queries
-   * are scoped to that agent's conversations. When null, statistics cover
-   * the entire system (admin view).
-   *
-   * Results are cached in-memory for 30 seconds per agentId key.
-   * All five queries run concurrently via Promise.all for minimal latency.
-   */
   async getStats(agentId: string | null): Promise<DashboardStats> {
     const cacheKey = agentId ?? '__all__';
     const cached = statsCache.get(cacheKey);
@@ -257,7 +179,6 @@ export const dashboardRepository = {
         db.queryOne<AvgResponseRow>(SQL_AVG_RESPONSE_TIME, param),
       ]);
 
-    // Build the priority breakdown, defaulting missing priorities to 0
     const priorityMap: DashboardStats['conversations_by_priority'] = {
       high: 0,
       medium: 0,

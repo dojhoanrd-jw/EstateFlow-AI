@@ -4,19 +4,11 @@ import useSWR from 'swr';
 import { API_ROUTES } from '@/shared/routes/api.routes';
 import type { ConversationWithLead, ApiResponse } from '@/shared/types';
 
-// ============================================
-// Filter types
-// ============================================
-
 export interface ConversationFilters {
   priority?: 'high' | 'medium' | 'low';
   tag?: string;
   search?: string;
 }
-
-// ============================================
-// Build query string from filters
-// ============================================
 
 function buildQueryString(filters: ConversationFilters): string {
   const params = new URLSearchParams();
@@ -36,10 +28,6 @@ function buildQueryString(filters: ConversationFilters): string {
   const query = params.toString();
   return query ? `?${query}` : '';
 }
-
-// ============================================
-// useConversations hook
-// ============================================
 
 export function useConversations(filters: ConversationFilters = {}) {
   const queryString = buildQueryString(filters);

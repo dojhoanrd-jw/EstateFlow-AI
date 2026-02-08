@@ -3,10 +3,6 @@ import bcrypt from 'bcryptjs';
 import { db } from '@/backend/server/db/client';
 import type { SessionUser, UserCredentialRow } from './auth.types';
 
-// ---------------------------------------------------------------------------
-// SQL
-// ---------------------------------------------------------------------------
-
 const SQL_GET_CREDENTIALS = `
   SELECT id, name, email, password_hash, role, is_active
   FROM users
@@ -21,16 +17,6 @@ const SQL_GET_USER_BY_ID = `
   LIMIT 1
 `;
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
-/**
- * Validate an email / password combination against the database.
- *
- * Returns the session-safe user object on success, or `null` when the
- * credentials are invalid (wrong email, wrong password, or deactivated user).
- */
 export async function validateCredentials(
   email: string,
   password: string,
@@ -53,12 +39,6 @@ export async function validateCredentials(
   };
 }
 
-/**
- * Retrieve a user by primary key.
- *
- * Excludes the password hash -- this is intended for session refresh and
- * profile lookups only.
- */
 export async function getUserById(id: string): Promise<SessionUser | null> {
   const row = await db.queryOne<
     SessionUser & { is_active: boolean }

@@ -2,10 +2,6 @@ import { AlertTriangle, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 import { Card, CardHeader, CardTitle, CardBody } from '@/frontend/components/ui/card';
 
-// ============================================
-// Types
-// ============================================
-
 interface PriorityChartProps {
   data: {
     high: number;
@@ -24,10 +20,6 @@ interface PriorityRow {
   textColor: string;
   dotColor: string;
 }
-
-// ============================================
-// Priority configuration
-// ============================================
 
 const priorities: PriorityRow[] = [
   {
@@ -59,10 +51,6 @@ const priorities: PriorityRow[] = [
   },
 ];
 
-// ============================================
-// Component
-// ============================================
-
 export function PriorityChart({ data, className }: PriorityChartProps) {
   const total = data.high + data.medium + data.low;
   const maxCount = Math.max(data.high, data.medium, data.low, 1);
@@ -85,7 +73,6 @@ export function PriorityChart({ data, className }: PriorityChartProps) {
 
           return (
             <div key={priority.key} className="space-y-2">
-              {/* Label row */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div
@@ -111,7 +98,6 @@ export function PriorityChart({ data, className }: PriorityChartProps) {
                 </div>
               </div>
 
-              {/* Bar */}
               <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
                 <div
                   className={cn(
@@ -130,7 +116,6 @@ export function PriorityChart({ data, className }: PriorityChartProps) {
           );
         })}
 
-        {/* Summary dots */}
         <div className="flex items-center justify-center gap-4 pt-2 border-t border-[var(--color-border-subtle)]">
           {priorities.map((priority) => {
             const count = data[priority.key];

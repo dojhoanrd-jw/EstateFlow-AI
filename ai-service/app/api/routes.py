@@ -1,5 +1,3 @@
-"""FastAPI router with all public endpoints."""
-
 from __future__ import annotations
 
 import logging
@@ -24,16 +22,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1")
 
 
-# ── POST /v1/analyze ──────────────────────────────────────────────────
-
-
 @router.post(
     "/analyze",
     response_model=AnalyzeResponse,
     dependencies=[Depends(verify_api_key)],
 )
 async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
-    """Analyse a sales conversation and return summary, tags and priority."""
     try:
         result = await analyze_conversation(
             conversation_id=request.conversation_id,
@@ -45,16 +39,12 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-# ── POST /v1/ingest ───────────────────────────────────────────────────
-
-
 @router.post(
     "/ingest",
     response_model=IngestResponse,
     dependencies=[Depends(verify_api_key)],
 )
 async def ingest(request: IngestRequest) -> IngestResponse:
-    """Ingest documents into the vector store for a given project."""
     try:
         texts = [doc.content for doc in request.documents]
         metadatas = [doc.metadata for doc in request.documents]
@@ -69,17 +59,12 @@ async def ingest(request: IngestRequest) -> IngestResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-# ── GET /v1/health ────────────────────────────────────────────────────
-
-
 @router.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
-    """Return service health status with database and OpenAI connectivity."""
     db_status = "ok"
     openai_status = "ok"
     doc_count = 0
 
-    # Database check
     try:
         row = await async_fetch_one("SELECT COUNT(*) AS cnt FROM project_embeddings")
         doc_count = row["cnt"] if row else 0
@@ -87,7 +72,6 @@ async def health() -> HealthResponse:
         logger.warning("Health check: database unreachable.")
         db_status = "unavailable"
 
-    # OpenAI check
     try:
         client = get_embeddings()
         client.embed_query("ping")

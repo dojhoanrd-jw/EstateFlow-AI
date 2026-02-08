@@ -5,10 +5,6 @@ import { loginSchema } from './auth.schemas';
 import { validateCredentials } from './auth.service';
 import type { SessionUser } from './auth.types';
 
-// ---------------------------------------------------------------------------
-// NextAuth v5 configuration
-// ---------------------------------------------------------------------------
-
 const config: NextAuthConfig = {
   trustHost: true,
   providers: [
@@ -51,10 +47,6 @@ const config: NextAuthConfig = {
   },
 
   callbacks: {
-    /**
-     * Persist custom fields (id, role) into the JWT so they survive across
-     * requests without extra DB lookups.
-     */
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
@@ -63,10 +55,6 @@ const config: NextAuthConfig = {
       return token;
     },
 
-    /**
-     * Expose the custom fields to the client-side `useSession()` and
-     * server-side `auth()` calls.
-     */
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;

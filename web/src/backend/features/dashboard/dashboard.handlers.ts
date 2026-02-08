@@ -2,10 +2,6 @@ import { withAuth, type AuthenticatedRequest } from '@/backend/server/lib/with-a
 import { apiSuccess, apiError } from '@/backend/server/lib/api-response';
 import { dashboardService } from './dashboard.service';
 
-// ---------------------------------------------------------------------------
-// GET /api/dashboard
-// ---------------------------------------------------------------------------
-
 export const GET = withAuth(async (req: AuthenticatedRequest) => {
   try {
     const stats = await dashboardService.getDashboardStats(

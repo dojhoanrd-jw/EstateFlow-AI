@@ -1,12 +1,4 @@
-"""LangChain prompt templates for conversation analysis.
-
-All prompts are designed for a Mexican real-estate CRM context where
-conversations between sales agents and leads happen primarily in Spanish.
-"""
-
 from langchain_core.prompts import ChatPromptTemplate
-
-# ── Summary prompt ──────────────────────────────────────────────────────
 
 SUMMARY_PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -39,8 +31,6 @@ SUMMARY_PROMPT = ChatPromptTemplate.from_messages(
         ),
     ]
 )
-
-# ── Tagger prompt ──────────────────────────────────────────────────────
 
 TAGGER_PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -84,8 +74,6 @@ TAGGER_PROMPT = ChatPromptTemplate.from_messages(
         ),
     ]
 )
-
-# ── Priority prompt ─────────────────────────────────────────────────────
 
 PRIORITY_PROMPT = ChatPromptTemplate.from_messages(
     [

@@ -9,10 +9,6 @@ import { ConversationFilters, type ConversationFilterValues } from './conversati
 import { ConversationItem } from './conversation-item';
 import type { ConversationWithLead } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 interface ConversationListProps {
   conversations: ConversationWithLead[];
   isLoading: boolean;
@@ -22,10 +18,6 @@ interface ConversationListProps {
   onSelectConversation: (id: string) => void;
   className?: string;
 }
-
-// ============================================
-// Loading skeleton
-// ============================================
 
 function ConversationListSkeleton() {
   return (
@@ -53,10 +45,6 @@ function ConversationListSkeleton() {
   );
 }
 
-// ============================================
-// Empty state
-// ============================================
-
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
@@ -74,10 +62,6 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
     </div>
   );
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function ConversationList({
   conversations,
@@ -108,7 +92,6 @@ export function ConversationList({
         className,
       )}
     >
-      {/* Header */}
       <div className="shrink-0 border-b border-[var(--color-border-default)] px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -123,7 +106,6 @@ export function ConversationList({
           </div>
         </div>
 
-        {/* Filters */}
         <div className="mt-3">
           <ConversationFilters
             conversations={conversations}
@@ -133,7 +115,6 @@ export function ConversationList({
         </div>
       </div>
 
-      {/* Scrollable list */}
       <div className="flex-1 overflow-y-auto" ref={scrollRef}>
         {isLoading ? (
           <ConversationListSkeleton />

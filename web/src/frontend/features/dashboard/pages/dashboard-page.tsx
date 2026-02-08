@@ -23,10 +23,6 @@ const TopTags = dynamic(
   { ssr: false },
 );
 
-// ============================================
-// Skeleton loaders
-// ============================================
-
 function StatsCardSkeleton() {
   return (
     <Card className="relative overflow-hidden">
@@ -129,10 +125,6 @@ function formatResponseTime(minutes: number): string {
   return `${hours}h ${remainingMinutes}m`;
 }
 
-// ============================================
-// DashboardPage
-// ============================================
-
 export function DashboardPage() {
   const { stats, isLoading, error, mutate } = useDashboard();
 
@@ -174,7 +166,6 @@ export function DashboardPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-8">
-      {/* Page header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
@@ -196,7 +187,6 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <StatsCard
           icon={MessageSquare}
@@ -228,7 +218,6 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Main content area */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           {stats?.conversations_by_priority && (

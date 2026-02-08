@@ -1,9 +1,5 @@
 import { cn } from '@/frontend/lib/utils';
 
-// ============================================
-// Base skeleton
-// ============================================
-
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
@@ -20,10 +16,6 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
     />
   );
 }
-
-// ============================================
-// Text line skeleton
-// ============================================
 
 interface SkeletonTextProps {
   lines?: number;
@@ -46,10 +38,6 @@ export function SkeletonText({ lines = 3, className }: SkeletonTextProps) {
   );
 }
 
-// ============================================
-// Circle skeleton (avatars)
-// ============================================
-
 interface SkeletonCircleProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -68,10 +56,6 @@ export function SkeletonCircle({ size = 'md', className }: SkeletonCircleProps) 
     />
   );
 }
-
-// ============================================
-// Rectangle skeleton (cards, images)
-// ============================================
 
 interface SkeletonRectProps {
   className?: string;

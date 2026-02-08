@@ -34,7 +34,6 @@ export function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
 
-    // Rate limiting: block after 5 consecutive failures for 30 seconds
     if (Date.now() < lockedUntilRef.current) {
       const secondsLeft = Math.ceil((lockedUntilRef.current - Date.now()) / 1000);
       setServerError(`Too many attempts. Please wait ${secondsLeft}s.`);
@@ -70,7 +69,6 @@ export function LoginForm() {
 
   return (
     <>
-      {/* Mobile logo (lg+ has the left brand panel) */}
       <div className="mb-6 flex items-center gap-2.5 lg:hidden">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600/10">
           <Building2 className="text-teal-600" size={22} />
@@ -80,7 +78,6 @@ export function LoginForm() {
         </span>
       </div>
 
-      {/* Heading */}
       <div className="mb-10">
         <h1 className="text-[28px] font-bold tracking-tight text-[var(--color-text-primary)] leading-tight">
           Welcome back
@@ -90,7 +87,6 @@ export function LoginForm() {
         </p>
       </div>
 
-      {/* Error alert */}
       {serverError && (
         <div className="mb-8 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-500" />
@@ -98,9 +94,7 @@ export function LoginForm() {
         </div>
       )}
 
-      {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Email */}
         <Input
           id="email"
           type="email"
@@ -112,7 +106,6 @@ export function LoginForm() {
           {...register('email')}
         />
 
-        {/* Password */}
         <Input
           id="password"
           type="password"
@@ -124,7 +117,6 @@ export function LoginForm() {
           {...register('password')}
         />
 
-        {/* Submit button */}
         <div className="pt-2">
           <Button
             type="submit"
@@ -144,7 +136,6 @@ export function LoginForm() {
         </div>
       </form>
 
-      {/* Footer */}
       <p className="mt-12 text-center text-xs text-[var(--color-text-tertiary)]">
         AI-powered real estate CRM platform
       </p>

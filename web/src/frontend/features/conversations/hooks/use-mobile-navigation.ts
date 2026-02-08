@@ -2,18 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
-// ============================================
-// Types
-// ============================================
-
 export type MobileView = 'list' | 'chat' | 'info';
-
-// ============================================
-// useMobileNavigation
-//
-// Manages the mobile single-column view state
-// and Escape-key dismissal of the info overlay.
-// ============================================
 
 export function useMobileNavigation() {
   const [mobileView, setMobileView] = useState<MobileView>('list');
@@ -34,7 +23,6 @@ export function useMobileNavigation() {
     setMobileView('chat');
   }, []);
 
-  // Dismiss mobile info overlay with Escape key
   useEffect(() => {
     if (mobileView !== 'info') return;
     const handleKeyDown = (e: KeyboardEvent) => {

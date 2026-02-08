@@ -1,9 +1,5 @@
 import type { ApiErrorResponse } from '@/shared/types';
 
-// ============================================
-// Error class for API failures
-// ============================================
-
 export class ApiError extends Error {
   status: number;
   code: string;
@@ -18,16 +14,12 @@ export class ApiError extends Error {
   }
 }
 
-// ============================================
-// Response parser
-// ============================================
-
 async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    // Session expired — redirect to login
     if (response.status === 401 && typeof window !== 'undefined') {
       window.location.href = '/login';
-      return new Promise(() => {}); // hang to avoid further processing
+      // Hang the promise to prevent further processing after redirect
+      return new Promise(() => {});
     }
 
     let errorData: ApiErrorResponse | null = null;
@@ -35,7 +27,6 @@ async function parseResponse<T>(response: Response): Promise<T> {
     try {
       errorData = await response.json();
     } catch {
-      // Response body is not JSON
     }
 
     throw new ApiError(
@@ -46,17 +37,12 @@ async function parseResponse<T>(response: Response): Promise<T> {
     );
   }
 
-  // Handle 204 No Content
   if (response.status === 204) {
     return undefined as T;
   }
 
   return response.json();
 }
-
-// ============================================
-// Default fetcher for SWR
-// ============================================
 
 export async function fetcher<T = unknown>(url: string): Promise<T> {
   const response = await fetch(url, {
@@ -68,10 +54,6 @@ export async function fetcher<T = unknown>(url: string): Promise<T> {
 
   return parseResponse<T>(response);
 }
-
-// ============================================
-// Typed request helpers
-// ============================================
 
 export async function apiGet<T>(url: string, params?: Record<string, string>): Promise<T> {
   const query = params ? `?${new URLSearchParams(params).toString()}` : '';

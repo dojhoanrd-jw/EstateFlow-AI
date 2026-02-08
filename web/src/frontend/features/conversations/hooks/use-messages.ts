@@ -7,10 +7,6 @@ import { apiPost } from '@/frontend/lib/fetcher';
 import type { MessageWithSender, ApiResponse } from '@/shared/types';
 import { useSocket } from './use-socket';
 
-// ============================================
-// useMessages hook (WebSocket-powered)
-// ============================================
-
 export function useMessages(
   conversationId: string | null,
   onIncomingMessage?: (msg: MessageWithSender) => void,
@@ -21,7 +17,6 @@ export function useMessages(
     ? API_ROUTES.conversations.messages(conversationId)
     : null;
 
-  // Fetch initial message history via REST (no polling)
   const { data, error, isLoading, mutate } = useSWR<ApiResponse<MessageWithSender[]>>(
     url,
     {
@@ -29,16 +24,13 @@ export function useMessages(
     },
   );
 
-  // Real WebSocket connection for live updates
   const { isConnected, onMessage, onAiUpdate } = useSocket(conversationId);
 
-  // Listen for new messages arriving via WebSocket
   useEffect(() => {
     onMessage((newMsg: MessageWithSender) => {
       mutate(
         (currentData) => {
           const existing = currentData?.data ?? [];
-          // Avoid duplicates (by id) and replace optimistic temp messages
           const filtered = existing.filter(
             (m) => m.id !== newMsg.id && !m.id.startsWith('temp-'),
           );
@@ -47,14 +39,9 @@ export function useMessages(
         { revalidate: false },
       );
 
-      // Notify parent for optimistic conversation list updates
       if (onIncomingRef.current) onIncomingRef.current(newMsg);
     });
   }, [onMessage, mutate]);
-
-  // ----------------------------------------
-  // Send a new message with optimistic update
-  // ----------------------------------------
 
   const sendMessage = useCallback(
     async (content: string, contentType: 'text' | 'image' = 'text') => {
@@ -62,7 +49,6 @@ export function useMessages(
 
       const endpoint = API_ROUTES.conversations.messages(conversationId);
 
-      // Optimistic update: append the new message immediately
       const optimisticMessage: MessageWithSender = {
         id: `temp-${Date.now()}`,
         conversation_id: conversationId,

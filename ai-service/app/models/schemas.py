@@ -1,5 +1,3 @@
-"""Pydantic request / response schemas for the EstateFlow AI Service."""
-
 from __future__ import annotations
 
 from typing import Any, Literal
@@ -7,12 +5,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
-# ── Analyze endpoint ────────────────────────────────────────────────────
-
-
 class MessageInput(BaseModel):
-    """A single message exchanged between an agent and a lead."""
-
     sender_type: Literal["agent", "lead"] = Field(
         ..., description="Who sent the message: the sales agent or the lead."
     )
@@ -21,8 +14,6 @@ class MessageInput(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
-    """Payload sent to the /analyze endpoint."""
-
     conversation_id: str = Field(
         ..., description="Unique identifier for the conversation."
     )
@@ -32,8 +23,6 @@ class AnalyzeRequest(BaseModel):
 
 
 class AnalyzeResponse(BaseModel):
-    """Result returned by the /analyze endpoint."""
-
     summary: str = Field(..., description="Concise conversation summary.")
     tags: list[str] = Field(
         default_factory=list, description="Applicable classification tags."
@@ -43,12 +32,7 @@ class AnalyzeResponse(BaseModel):
     )
 
 
-# ── Ingest endpoint ────────────────────────────────────────────────────
-
-
 class DocumentInput(BaseModel):
-    """A single document chunk to ingest into the vector store."""
-
     content: str = Field(..., description="Plain-text content of the document.")
     metadata: dict[str, Any] = Field(
         default_factory=dict,
@@ -57,8 +41,6 @@ class DocumentInput(BaseModel):
 
 
 class IngestRequest(BaseModel):
-    """Payload sent to the /ingest endpoint."""
-
     project_name: str = Field(..., description="Real-estate project name.")
     documents: list[DocumentInput] = Field(
         ..., min_length=1, description="Documents to ingest."
@@ -66,20 +48,13 @@ class IngestRequest(BaseModel):
 
 
 class IngestResponse(BaseModel):
-    """Result returned by the /ingest endpoint."""
-
     status: str = Field(default="ok")
     chunks_created: int = Field(
         ..., description="Number of vector-store chunks created."
     )
 
 
-# ── Health endpoint ─────────────────────────────────────────────────────
-
-
 class HealthResponse(BaseModel):
-    """Result returned by the /health endpoint."""
-
     status: str = Field(default="ok")
     database_status: str = Field(
         default="ok", description="Database connectivity status."

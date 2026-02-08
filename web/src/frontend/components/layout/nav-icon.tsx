@@ -1,10 +1,6 @@
 import { LayoutDashboard, MessageSquare } from 'lucide-react';
 import type { NavItem } from '@/frontend/config/navigation';
 
-// ============================================
-// Shared icon resolver for navigation
-// ============================================
-
 const iconMap = {
   LayoutDashboard,
   MessageSquare,

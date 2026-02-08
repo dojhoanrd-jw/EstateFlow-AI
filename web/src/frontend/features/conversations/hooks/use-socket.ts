@@ -5,10 +5,6 @@ import { io, type Socket } from 'socket.io-client';
 import type { MessageWithSender, TypingUser } from '@/shared/types';
 import { socketConfig } from '@/frontend/config/socket';
 
-// ============================================
-// Singleton Socket.IO connection
-// ============================================
-
 let socketInstance: Socket | null = null;
 
 function getSocket(): Socket {
@@ -17,10 +13,6 @@ function getSocket(): Socket {
   }
   return socketInstance;
 }
-
-// ============================================
-// useSocket — Socket.IO powered
-// ============================================
 
 export function useSocket(conversationId: string | null) {
   const [isConnected, setIsConnected] = useState(false);
@@ -58,20 +50,17 @@ export function useSocket(conversationId: string | null) {
 
     if (socket.connected) setIsConnected(true);
 
-    // Room management
     if (prevRoomRef.current && prevRoomRef.current !== conversationId) {
       socket.emit('leave', prevRoomRef.current);
     }
     socket.emit('join', conversationId);
     prevRoomRef.current = conversationId;
 
-    // Listen for new messages
     const handleNewMessage = (data: MessageWithSender) => {
       if (onMessageRef.current) onMessageRef.current(data);
     };
     socket.on('new_message', handleNewMessage);
 
-    // Listen for AI analysis updates
     const handleAiUpdate = () => {
       if (onAiUpdateRef.current) onAiUpdateRef.current();
     };
@@ -110,10 +99,6 @@ export function useSocket(conversationId: string | null) {
 
   return { isConnected, onMessage, onAiUpdate, sendTyping };
 }
-
-// ============================================
-// useTypingIndicator (simulated for leads)
-// ============================================
 
 export function useTypingIndicator(conversationId: string | null) {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);

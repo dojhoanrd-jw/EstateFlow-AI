@@ -6,10 +6,6 @@ import { Select } from '@/frontend/components/ui/select';
 import { cn } from '@/frontend/lib/utils';
 import type { ConversationWithLead, ConversationPriority } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 export interface ConversationFilterValues {
   priority?: ConversationPriority;
   tag?: string;
@@ -23,20 +19,12 @@ interface ConversationFiltersProps {
   className?: string;
 }
 
-// ============================================
-// Priority options
-// ============================================
-
 const priorityOptions = [
   { value: '', label: 'All priorities' },
   { value: 'high', label: 'High priority' },
   { value: 'medium', label: 'Medium priority' },
   { value: 'low', label: 'Low priority' },
 ];
-
-// ============================================
-// Component
-// ============================================
 
 export function ConversationFilters({
   conversations,
@@ -46,7 +34,6 @@ export function ConversationFilters({
 }: ConversationFiltersProps) {
   const [searchInput, setSearchInput] = useState(value.search ?? '');
 
-  // Collect unique tags from all conversations
   const tagOptions = useMemo(() => {
     const tagSet = new Set<string>();
     conversations.forEach((conv) => {
@@ -62,10 +49,6 @@ export function ConversationFilters({
       })),
     ];
   }, [conversations]);
-
-  // ----------------------------------------
-  // Handlers
-  // ----------------------------------------
 
   const handlePriorityChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -123,7 +106,6 @@ export function ConversationFilters({
         className,
       )}
     >
-      {/* Search */}
       <div className="relative flex-1">
         <Search
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
@@ -149,7 +131,6 @@ export function ConversationFilters({
         />
       </div>
 
-      {/* Priority filter */}
       <div className="w-full sm:w-36">
         <Select
           options={priorityOptions}
@@ -159,7 +140,6 @@ export function ConversationFilters({
         />
       </div>
 
-      {/* Tag filter */}
       <div className="w-full sm:w-32">
         <Select
           options={tagOptions}

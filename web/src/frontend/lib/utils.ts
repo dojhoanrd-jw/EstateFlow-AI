@@ -3,17 +3,9 @@ import { twMerge } from 'tailwind-merge';
 import { formatDistanceToNowStrict, parseISO, isValid } from 'date-fns';
 import type { ConversationPriority } from '@/shared/types';
 
-// ============================================
-// Class name composition
-// ============================================
-
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-// ============================================
-// Date formatting - relative time
-// ============================================
 
 export function formatDate(date: string | Date): string {
   const parsed = typeof date === 'string' ? parseISO(date) : date;
@@ -38,10 +30,6 @@ export function formatDate(date: string | Date): string {
   });
 }
 
-// ============================================
-// Currency formatting - MXN
-// ============================================
-
 const mxnFormatter = new Intl.NumberFormat('es-MX', {
   style: 'currency',
   currency: 'MXN',
@@ -52,10 +40,6 @@ const mxnFormatter = new Intl.NumberFormat('es-MX', {
 export function formatCurrency(amount: number): string {
   return mxnFormatter.format(amount);
 }
-
-// ============================================
-// Initials from name
-// ============================================
 
 export function getInitials(name: string): string {
   if (!name || !name.trim()) return '?';
@@ -71,10 +55,6 @@ export function getInitials(name: string): string {
   return (first.charAt(0) + last.charAt(0)).toUpperCase();
 }
 
-// ============================================
-// Priority color classes
-// ============================================
-
 const priorityClasses: Record<ConversationPriority, string> = {
   high: 'bg-[var(--color-priority-high-bg)] text-[var(--color-priority-high-text)] border border-[var(--color-priority-high-border)]',
   medium: 'bg-[var(--color-priority-medium-bg)] text-[var(--color-priority-medium-text)] border border-[var(--color-priority-medium-border)]',
@@ -84,10 +64,6 @@ const priorityClasses: Record<ConversationPriority, string> = {
 export function getPriorityColor(priority: ConversationPriority): string {
   return priorityClasses[priority] ?? priorityClasses.low;
 }
-
-// ============================================
-// Tag color classes
-// ============================================
 
 const tagColorMap: Record<string, string> = {
   'hot-lead': 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400',
@@ -124,7 +100,6 @@ export function getTagColor(tag: string): string {
     return mapped;
   }
 
-  // Deterministic fallback based on string hash
   let hash = 0;
   for (let i = 0; i < normalized.length; i++) {
     hash = ((hash << 5) - hash + normalized.charCodeAt(i)) | 0;

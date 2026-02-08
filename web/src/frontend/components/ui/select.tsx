@@ -4,10 +4,6 @@ import { forwardRef, type SelectHTMLAttributes } from 'react';
 import { cn } from '@/frontend/lib/utils';
 import { ChevronDown } from 'lucide-react';
 
-// ============================================
-// Types
-// ============================================
-
 interface SelectOption {
   value: string;
   label: string;
@@ -21,10 +17,6 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'chi
   options: SelectOption[];
   placeholder?: string;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (

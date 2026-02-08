@@ -10,10 +10,6 @@ import { MessageBubble } from './message-bubble';
 import { TypingIndicator } from './typing-indicator';
 import type { MessageWithSender, TypingUser } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 interface MessageThreadProps {
   messages: MessageWithSender[];
   isLoading: boolean;
@@ -25,10 +21,6 @@ interface MessageThreadProps {
 type ThreadItem =
   | { type: 'date'; date: string }
   | { type: 'message'; message: MessageWithSender };
-
-// ============================================
-// Build flat item list with date separators
-// ============================================
 
 function buildItems(messages: MessageWithSender[]): ThreadItem[] {
   const items: ThreadItem[] = [];
@@ -45,10 +37,6 @@ function buildItems(messages: MessageWithSender[]): ThreadItem[] {
 
   return items;
 }
-
-// ============================================
-// Date separator
-// ============================================
 
 function DateSeparator({ date }: { date: string }) {
   const parsed = parseISO(date);
@@ -76,10 +64,6 @@ function DateSeparator({ date }: { date: string }) {
   );
 }
 
-// ============================================
-// Loading skeleton
-// ============================================
-
 function MessageThreadSkeleton() {
   return (
     <div className="space-y-4 p-4">
@@ -104,10 +88,6 @@ function MessageThreadSkeleton() {
   );
 }
 
-// ============================================
-// Empty state: no conversation selected
-// ============================================
-
 function NoConversationSelected() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-8 text-center">
@@ -124,10 +104,6 @@ function NoConversationSelected() {
   );
 }
 
-// ============================================
-// Component
-// ============================================
-
 export function MessageThread({
   messages,
   isLoading,
@@ -138,7 +114,6 @@ export function MessageThread({
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Flatten messages into renderable items (date separators + messages)
   const items = useMemo(() => buildItems(messages), [messages]);
 
   const virtualizer = useVirtualizer({
@@ -156,21 +131,18 @@ export function MessageThread({
     },
   });
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages.length, typingUsers.length]);
 
-  // Scroll to bottom immediately when conversation changes
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: 'instant' });
     }
   }, [conversationId]);
 
-  // If no conversation selected, show placeholder
   if (!conversationId) {
     return (
       <div className={cn('flex-1', className)}>
@@ -179,7 +151,6 @@ export function MessageThread({
     );
   }
 
-  // Loading state
   if (isLoading) {
     return (
       <div className={cn('flex-1 overflow-y-auto', className)} ref={scrollRef}>
@@ -191,7 +162,6 @@ export function MessageThread({
   return (
     <div className={cn('flex-1 overflow-y-auto', className)} ref={scrollRef}>
       <div aria-live="polite" aria-relevant="additions">
-        {/* Virtualized message list */}
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
@@ -227,14 +197,12 @@ export function MessageThread({
           })}
         </div>
 
-        {/* Typing indicator */}
         {typingUsers.length > 0 && (
           <div className="px-4 py-1.5">
             <TypingIndicator typingUsers={typingUsers} />
           </div>
         )}
 
-        {/* Scroll anchor */}
         <div ref={bottomRef} />
       </div>
     </div>

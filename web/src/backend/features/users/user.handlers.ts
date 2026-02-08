@@ -5,10 +5,6 @@ import { userService } from './user.service';
 import { createUserSchema } from '@/shared/validations/schemas';
 import { paginationSchema } from '@/shared/validations/common';
 
-// ---------------------------------------------------------------------------
-// GET /api/users  (admin only)
-// ---------------------------------------------------------------------------
-
 export const GET = withPermission(
   ['admin'],
   async (req: AuthenticatedRequest) => {
@@ -28,10 +24,6 @@ export const GET = withPermission(
     }
   },
 );
-
-// ---------------------------------------------------------------------------
-// POST /api/users  (admin only)
-// ---------------------------------------------------------------------------
 
 export const POST = withPermission(
   ['admin'],

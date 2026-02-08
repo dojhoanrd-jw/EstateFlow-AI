@@ -1,9 +1,3 @@
-"""RAG retriever -- cosine-similarity search over project_embeddings.
-
-Uses pgvector's ``<=>`` (cosine distance) operator to find the most relevant
-document chunks for a given query.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -20,7 +14,6 @@ def retrieve_relevant_chunks(
     top_k: int | None = None,
     project_name: str | None = None,
 ) -> list[str]:
-    """Return the *top_k* most relevant text chunks for *query* (sync)."""
     top_k = top_k or settings.RAG_TOP_K
 
     query_vector = list(embed_query_cached(query))
@@ -55,10 +48,6 @@ async def async_retrieve_relevant_chunks(
     top_k: int | None = None,
     project_name: str | None = None,
 ) -> list[str]:
-    """Return the *top_k* most relevant text chunks for *query* (async).
-
-    Uses ``async_fetch_all`` so it doesn't block the event loop.
-    """
     top_k = top_k or settings.RAG_TOP_K
 
     query_vector = list(embed_query_cached(query))
@@ -89,7 +78,6 @@ async def async_retrieve_relevant_chunks(
 
 
 def _log_results(rows: list[dict], query: str) -> None:
-    """Log retrieval results at debug level."""
     if rows:
         logger.debug(
             "Retrieved %d chunks (best similarity: %.4f)",

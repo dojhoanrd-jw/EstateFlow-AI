@@ -5,19 +5,11 @@ import { Send } from 'lucide-react';
 import { Button } from '@/frontend/components/ui/button';
 import { cn } from '@/frontend/lib/utils';
 
-// ============================================
-// Types
-// ============================================
-
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>;
   disabled?: boolean;
   className?: string;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function MessageComposer({
   onSend,
@@ -27,10 +19,6 @@ export function MessageComposer({
   const [content, setContent] = useState('');
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // ----------------------------------------
-  // Auto-resize textarea
-  // ----------------------------------------
 
   const adjustHeight = useCallback(() => {
     const textarea = textareaRef.current;
@@ -45,10 +33,6 @@ export function MessageComposer({
     adjustHeight();
   }, [content, adjustHeight]);
 
-  // ----------------------------------------
-  // Submit handler
-  // ----------------------------------------
-
   const handleSubmit = useCallback(async () => {
     const trimmed = content.trim();
     if (!trimmed || isSending || disabled) return;
@@ -57,7 +41,6 @@ export function MessageComposer({
     try {
       await onSend(trimmed);
       setContent('');
-      // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
@@ -65,13 +48,8 @@ export function MessageComposer({
       setIsSending(false);
     }
 
-    // Refocus the textarea
     textareaRef.current?.focus();
   }, [content, isSending, disabled, onSend]);
-
-  // ----------------------------------------
-  // Keyboard handler: Enter to send, Shift+Enter for newline
-  // ----------------------------------------
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

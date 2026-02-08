@@ -7,10 +7,6 @@ import { broadcastToConversation } from '@/backend/server/socket/io';
 import { debouncedTriggerAIAnalysis } from '@/backend/features/conversations/ai-analysis';
 import type { RouteContext } from '@/shared/types';
 
-// ---------------------------------------------------------------------------
-// GET /api/conversations/[id]/messages
-// ---------------------------------------------------------------------------
-
 export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
     const { id: rawId } = await context.params;
@@ -35,10 +31,6 @@ export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteCont
     return apiError(error);
   }
 });
-
-// ---------------------------------------------------------------------------
-// POST /api/conversations/[id]/messages
-// ---------------------------------------------------------------------------
 
 export const POST = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
@@ -65,10 +57,6 @@ export const POST = withAuth(async (req: AuthenticatedRequest, context: RouteCon
     return apiError(error);
   }
 });
-
-// ---------------------------------------------------------------------------
-// PATCH /api/conversations/[id]/messages  — mark as read
-// ---------------------------------------------------------------------------
 
 export const PATCH = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {

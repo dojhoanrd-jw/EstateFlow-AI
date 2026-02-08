@@ -3,18 +3,10 @@ import { Badge } from '@/frontend/components/ui/badge';
 import { cn } from '@/frontend/lib/utils';
 import type { ConversationPriority } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 interface AIPriorityBadgeProps {
   priority: ConversationPriority;
   className?: string;
 }
-
-// ============================================
-// Priority config
-// ============================================
 
 const priorityConfig: Record<
   ConversationPriority,
@@ -40,10 +32,6 @@ const priorityConfig: Record<
     description: 'Can be addressed at regular pace',
   },
 };
-
-// ============================================
-// Component
-// ============================================
 
 export function AIPriorityBadge({ priority, className }: AIPriorityBadgeProps) {
   const config = priorityConfig[priority];

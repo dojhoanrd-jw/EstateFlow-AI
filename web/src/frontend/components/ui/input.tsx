@@ -3,10 +3,6 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
 import { cn } from '@/frontend/lib/utils';
 
-// ============================================
-// Component
-// ============================================
-
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;

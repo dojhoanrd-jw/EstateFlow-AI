@@ -3,18 +3,10 @@ import { Card, CardBody } from '@/frontend/components/ui/card';
 import { Skeleton, SkeletonText } from '@/frontend/components/ui/skeleton';
 import { cn } from '@/frontend/lib/utils';
 
-// ============================================
-// Types
-// ============================================
-
 interface AISummaryProps {
   summary: string | null;
   className?: string;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function AISummary({ summary, className }: AISummaryProps) {
   return (
@@ -27,7 +19,6 @@ export function AISummary({ summary, className }: AISummaryProps) {
     >
       <Card className="!border-0 !shadow-none">
         <CardBody className="!p-3">
-          {/* Header */}
           <div className="flex items-center gap-2 mb-2">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[var(--color-accent-500)]/10">
               <Brain size={13} className="text-[var(--color-accent-600)]" />
@@ -37,7 +28,6 @@ export function AISummary({ summary, className }: AISummaryProps) {
             </span>
           </div>
 
-          {/* Content */}
           {summary ? (
             <p className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
               {summary}

@@ -1,10 +1,6 @@
 import { ApiError } from './api-error';
 import type { UserRole } from '@/shared/types';
 
-/**
- * Assert the authenticated user has access to a conversation.
- * Admins bypass the check; agents must be the assigned owner.
- */
 export function assertConversationAccess(
   conversation: { assigned_agent_id: string },
   userId: string,

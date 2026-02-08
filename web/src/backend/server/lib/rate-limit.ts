@@ -1,18 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import Redis from 'ioredis';
 
-// ---------------------------------------------------------------------------
-// Redis-backed sliding-window rate limiter
-//
-// Uses a Redis sorted set per key. Each request adds a timestamped member;
-// expired members are pruned atomically. Falls back to in-memory if
-// REDIS_URL is not configured (dev / single-instance).
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Redis client (singleton, lazy)
-// ---------------------------------------------------------------------------
-
 let redis: Redis | null = null;
 
 function getRedis(): Redis | null {
@@ -34,20 +22,13 @@ function getRedis(): Redis | null {
   return redis;
 }
 
-// ---------------------------------------------------------------------------
-// Rate limit result
-// ---------------------------------------------------------------------------
-
 interface RateLimitResult {
   allowed: boolean;
   remaining: number;
   resetMs: number;
 }
 
-// ---------------------------------------------------------------------------
-// Redis implementation (sorted set sliding window)
-// ---------------------------------------------------------------------------
-
+// Sliding-window rate limit via Redis sorted sets
 async function checkRateLimitRedis(
   client: Redis,
   key: string,
@@ -60,16 +41,15 @@ async function checkRateLimitRedis(
 
   const results = await client
     .multi()
-    .zremrangebyscore(redisKey, 0, cutoff)   // prune expired
-    .zcard(redisKey)                          // current count
-    .zadd(redisKey, now, `${now}:${Math.random()}`) // add this request
-    .pexpire(redisKey, windowMs)              // auto-cleanup TTL
+    .zremrangebyscore(redisKey, 0, cutoff)
+    .zcard(redisKey)
+    .zadd(redisKey, now, `${now}:${Math.random()}`)
+    .pexpire(redisKey, windowMs)
     .exec();
 
   const count = (results?.[1]?.[1] as number) ?? 0;
 
   if (count >= maxRequests) {
-    // Remove the entry we just added — request is denied
     await client.zremrangebyscore(redisKey, now, now);
     return { allowed: false, remaining: 0, resetMs: windowMs };
   }
@@ -81,10 +61,7 @@ async function checkRateLimitRedis(
   };
 }
 
-// ---------------------------------------------------------------------------
-// In-memory fallback (for dev / no Redis)
-// ---------------------------------------------------------------------------
-
+// In-memory fallback when Redis is unavailable
 interface WindowEntry { timestamps: number[] }
 const memStore = new Map<string, WindowEntry>();
 const MAX_MEM_ENTRIES = 10_000;
@@ -98,7 +75,6 @@ function checkRateLimitMemory(
   const now = Date.now();
   const cutoff = now - windowMs;
 
-  // Lazy cleanup every 60s
   if (now - lastCleanup > 60_000) {
     lastCleanup = now;
     for (const [k, e] of memStore) {
@@ -107,7 +83,6 @@ function checkRateLimitMemory(
     }
   }
 
-  // Evict oldest entries if map exceeds cap (Map iterates in insertion order)
   if (memStore.size > MAX_MEM_ENTRIES) {
     const excess = memStore.size - MAX_MEM_ENTRIES;
     let deleted = 0;
@@ -131,7 +106,6 @@ function checkRateLimitMemory(
   return { allowed: true, remaining: maxRequests - entry.timestamps.length, resetMs: windowMs };
 }
 
-// Periodic cleanup independent of request flow (unref'd so it won't block shutdown)
 const cleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [k, e] of memStore) {
@@ -141,10 +115,7 @@ const cleanupInterval = setInterval(() => {
 }, 60_000);
 if (cleanupInterval.unref) cleanupInterval.unref();
 
-// ---------------------------------------------------------------------------
-// Unified check (Redis → in-memory fallback)
-// ---------------------------------------------------------------------------
-
+// Uses Redis when available, otherwise falls back to in-memory
 export async function checkRateLimit(
   key: string,
   maxRequests: number,
@@ -155,15 +126,11 @@ export async function checkRateLimit(
     try {
       return await checkRateLimitRedis(client, key, maxRequests, windowMs);
     } catch {
-      // Redis down → fall back silently
+      // Redis down — fall back silently
     }
   }
   return checkRateLimitMemory(key, maxRequests, windowMs);
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function getClientIp(req: NextRequest): string {
   return (
@@ -173,25 +140,16 @@ function getClientIp(req: NextRequest): string {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Higher-order wrapper for route handlers
-// ---------------------------------------------------------------------------
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RouteHandler = (req: NextRequest, ...args: any[]) => Promise<Response>;
 
 interface RateLimitOptions {
   maxRequests: number;
   windowMs: number;
-  /** Optional prefix to isolate rate limit buckets (e.g. 'auth', 'api') */
   prefix?: string;
 }
 
-/**
- * Wraps a Next.js route handler with rate limiting.
- *
- * Uses Redis when REDIS_URL is set, otherwise falls back to in-memory.
- */
+// Wraps a Next.js route handler with sliding-window rate limiting
 export function withRateLimit<T extends RouteHandler>(handler: T, options: RateLimitOptions): T {
   const { maxRequests, windowMs, prefix = 'global' } = options;
 

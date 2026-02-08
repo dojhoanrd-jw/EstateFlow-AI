@@ -3,10 +3,6 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 import { Card } from '@/frontend/components/ui/card';
 
-// ============================================
-// Types
-// ============================================
-
 type StatsCardColor = 'blue' | 'red' | 'orange' | 'green' | 'violet' | 'amber';
 
 interface StatsCardProps {
@@ -21,15 +17,6 @@ interface StatsCardProps {
   color?: StatsCardColor;
   className?: string;
 }
-
-// ============================================
-// Color map
-//
-// Each accent color defines:
-//   - iconBg:   soft background circle
-//   - iconText: icon stroke color
-//   - trend:    trend indicator color
-// ============================================
 
 const colorMap: Record<StatsCardColor, { iconBg: string; iconText: string; trend: string }> = {
   blue: {
@@ -64,10 +51,6 @@ const colorMap: Record<StatsCardColor, { iconBg: string; iconText: string; trend
   },
 };
 
-// ============================================
-// Component
-// ============================================
-
 export function StatsCard({
   icon: Icon,
   title,
@@ -83,7 +66,6 @@ export function StatsCard({
   return (
     <Card className={cn('relative overflow-hidden', className)}>
       <div className="px-6 py-5">
-        {/* Header row: icon + title */}
         <div className="flex items-center gap-3">
           <div
             className={cn(
@@ -98,13 +80,11 @@ export function StatsCard({
           </p>
         </div>
 
-        {/* Value */}
         <div className="mt-4 flex items-end justify-between gap-2">
           <p className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
             {value}
           </p>
 
-          {/* Trend indicator */}
           {trend && (
             <div
               className={cn(
@@ -127,7 +107,6 @@ export function StatsCard({
           )}
         </div>
 
-        {/* Subtitle / description */}
         {subtitle && (
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
             {subtitle}
@@ -135,7 +114,6 @@ export function StatsCard({
         )}
       </div>
 
-      {/* Decorative accent bar at top */}
       <div
         className={cn(
           'absolute inset-x-0 top-0 h-0.5',

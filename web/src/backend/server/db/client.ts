@@ -7,7 +7,6 @@ const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
-// Set a 10-second statement timeout on every new connection
 pool.on('connect', (client) => {
   client.query("SET statement_timeout = '10000'");
 });
@@ -15,10 +14,6 @@ pool.on('connect', (client) => {
 pool.on('error', (err) => {
   console.error('[DB] Unexpected pool error:', err.message);
 });
-
-// ---------------------------------------------------------------------------
-// Transaction client — mirrors db API but uses a single acquired connection
-// ---------------------------------------------------------------------------
 
 export interface TxClient {
   query<T extends QueryResultRow = QueryResultRow>(
@@ -65,10 +60,6 @@ function createTxClient(client: PoolClient): TxClient {
     },
   };
 }
-
-// ---------------------------------------------------------------------------
-// Main database client
-// ---------------------------------------------------------------------------
 
 export const db = {
   async query<T extends QueryResultRow = QueryResultRow>(

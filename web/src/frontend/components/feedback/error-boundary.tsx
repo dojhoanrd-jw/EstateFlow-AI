@@ -3,10 +3,6 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 
-// ============================================
-// Types
-// ============================================
-
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallbackTitle?: string;
@@ -17,13 +13,6 @@ interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
 }
-
-// ============================================
-// ErrorBoundary
-//
-// Catches render errors in any child component
-// and displays a retry UI instead of a white screen.
-// ============================================
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {

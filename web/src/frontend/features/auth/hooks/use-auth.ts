@@ -6,10 +6,6 @@ import { useRouter } from 'next/navigation';
 import { APP_ROUTES } from '@/shared/routes/app.routes';
 import type { UserRole } from '@/shared/types';
 
-// ============================================
-// Typed session user
-// ============================================
-
 interface SessionUser {
   id: string;
   name: string;
@@ -17,12 +13,6 @@ interface SessionUser {
   role: UserRole;
   image: string | null;
 }
-
-// ============================================
-// useCurrentUser
-// Returns typed user data from the active session.
-// Returns null while loading or when unauthenticated.
-// ============================================
 
 export function useCurrentUser() {
   const { data: session, status } = useSession();
@@ -43,12 +33,6 @@ export function useCurrentUser() {
     isAuthenticated: status === 'authenticated',
   };
 }
-
-// ============================================
-// useRequireAuth
-// Redirects to the login page if the user
-// is not authenticated. Use in protected pages.
-// ============================================
 
 export function useRequireAuth() {
   const { user, isLoading, isAuthenticated } = useCurrentUser();

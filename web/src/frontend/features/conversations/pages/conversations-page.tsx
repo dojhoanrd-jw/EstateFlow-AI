@@ -15,20 +15,6 @@ const LeadInfoPanel = dynamic(
   { ssr: false },
 );
 
-// ============================================
-// ConversationsPage
-//
-// 3-column layout:
-//   Left  (w-80)  : ConversationList
-//   Center(flex-1) : MessageThread + MessageComposer
-//   Right (w-80)  : LeadInfoPanel (AI components)
-//
-// Responsive:
-//   mobile  (<768)  : 1 column with navigation
-//   tablet  (768-1280): 2 columns (list + chat)
-//   desktop (>1280) : 3 columns
-// ============================================
-
 export function ConversationsPage() {
   const {
     selectedConversationId,
@@ -66,7 +52,6 @@ export function ConversationsPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] lg:h-screen overflow-hidden bg-[var(--color-bg-primary)]">
-      {/* Offline / reconnecting banner */}
       {selectedConversationId && !isConnected && (
         <div className="flex shrink-0 items-center justify-center gap-2 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" role="status">
           <WifiOff size={14} />
@@ -75,14 +60,9 @@ export function ConversationsPage() {
       )}
 
       <div className="flex flex-1 min-h-0">
-      {/* ============================================ */}
-      {/* LEFT PANEL: Conversation List                */}
-      {/* ============================================ */}
       <div
         className={cn(
-          // Desktop: always visible, fixed width
           'hidden md:flex md:w-80 md:shrink-0',
-          // Mobile: full width when list view is active
           mobileView === 'list' && 'flex !w-full md:!w-80',
         )}
       >
@@ -97,18 +77,12 @@ export function ConversationsPage() {
         />
       </div>
 
-      {/* ============================================ */}
-      {/* CENTER PANEL: Message Thread + Composer       */}
-      {/* ============================================ */}
       <div
         className={cn(
-          // Desktop: always visible, fills remaining space
           'hidden md:flex md:flex-1 md:flex-col md:min-w-0',
-          // Mobile: full width when chat view is active
           mobileView === 'chat' && 'flex !w-full flex-1 flex-col min-w-0',
         )}
       >
-        {/* Mobile header with back button */}
         <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-3 py-2 md:hidden">
           <button
             type="button"
@@ -135,7 +109,6 @@ export function ConversationsPage() {
           </button>
         </div>
 
-        {/* Desktop header with conversation name and info toggle */}
         {selectedConversation && (
           <div className="hidden md:flex shrink-0 items-center justify-between border-b border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-2.5">
             <div className="flex items-center gap-3">
@@ -170,7 +143,6 @@ export function ConversationsPage() {
           </div>
         )}
 
-        {/* Message thread */}
         <MessageThread
           messages={messages}
           isLoading={isLoadingMessages}
@@ -178,18 +150,12 @@ export function ConversationsPage() {
           conversationId={selectedConversationId}
         />
 
-        {/* Message composer */}
         <MessageComposer
           onSend={handleSendMessage}
           disabled={!selectedConversationId}
         />
       </div>
 
-      {/* ============================================ */}
-      {/* RIGHT PANEL: Lead Info + AI Components       */}
-      {/* ============================================ */}
-
-      {/* Desktop: visible on xl+ when toggled on */}
       {showInfoPanel && (
         <div className="hidden xl:block xl:w-80 xl:shrink-0">
           <LeadInfoPanel
@@ -199,7 +165,6 @@ export function ConversationsPage() {
         </div>
       )}
 
-      {/* Mobile: full-screen overlay when info view is active */}
       {mobileView === 'info' && (
         <div className="fixed inset-0 z-50 flex xl:hidden">
           <div

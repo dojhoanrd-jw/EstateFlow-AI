@@ -6,13 +6,6 @@ import { cn } from '@/frontend/lib/utils';
 import { Avatar } from '@/frontend/components/ui/avatar';
 import { useCurrentUser } from '@/frontend/features/auth/hooks/use-auth';
 
-// ============================================
-// User Section Component
-//
-// Shared user info + sign-out UI used by
-// both Sidebar (compact) and MobileNav (expanded).
-// ============================================
-
 interface UserSectionProps {
   variant?: 'sidebar' | 'mobile';
 }

@@ -6,10 +6,6 @@ import {
   createConversationSchema,
 } from '@/shared/validations/schemas';
 
-// ---------------------------------------------------------------------------
-// GET /api/conversations
-// ---------------------------------------------------------------------------
-
 export const GET = withAuth(async (req: AuthenticatedRequest) => {
   try {
     const { searchParams } = new URL(req.url);
@@ -34,10 +30,6 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
     return apiError(error);
   }
 });
-
-// ---------------------------------------------------------------------------
-// POST /api/conversations
-// ---------------------------------------------------------------------------
 
 export const POST = withAuth(async (req: AuthenticatedRequest) => {
   try {

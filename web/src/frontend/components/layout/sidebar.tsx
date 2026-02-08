@@ -8,16 +8,11 @@ import { NavIcon } from '@/frontend/components/layout/nav-icon';
 import { NAV_ITEMS } from '@/frontend/config/navigation';
 import { UserSection } from '@/frontend/components/layout/user-section';
 
-// ============================================
-// Sidebar Component
-// ============================================
-
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-800 bg-slate-900 lg:flex">
-      {/* ---- Logo ---- */}
       <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-6">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-600/20">
           <Building2 className="text-teal-400" size={20} />
@@ -27,7 +22,6 @@ export function Sidebar() {
         </span>
       </div>
 
-      {/* ---- Navigation ---- */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Menu
@@ -67,7 +61,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* ---- User section ---- */}
       <UserSection variant="sidebar" />
     </aside>
   );

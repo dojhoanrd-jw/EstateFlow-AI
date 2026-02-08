@@ -23,17 +23,12 @@ type HandlerFn = (
   context: RouteContext,
 ) => Promise<Response>;
 
-// ---------------------------------------------------------------------------
-// CSRF: Origin-header validation for state-changing requests
-// ---------------------------------------------------------------------------
-
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 export function validateOrigin(req: NextRequest): void {
   if (SAFE_METHODS.has(req.method)) return;
 
   const origin = req.headers.get('origin');
-  // Allow same-origin requests (origin header is absent) and server-side calls
   if (!origin) return;
 
   const host = req.headers.get('host');
@@ -53,7 +48,6 @@ export function withAuth(handler: HandlerFn) {
     try {
       validateOrigin(req);
 
-      // Reject oversized request bodies
       const contentLength = req.headers.get('content-length');
       if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
         throw ApiError.tooLarge('Request body too large (max 1 MB)');

@@ -5,10 +5,6 @@ import { leadService } from './lead.service';
 import { createLeadSchema } from '@/shared/validations/schemas';
 import { paginationSchema } from '@/shared/validations/common';
 
-// ---------------------------------------------------------------------------
-// GET /api/leads
-// ---------------------------------------------------------------------------
-
 export const GET = withAuth(async (req: AuthenticatedRequest) => {
   try {
     const { searchParams } = new URL(req.url);
@@ -25,10 +21,6 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
     return apiError(error);
   }
 });
-
-// ---------------------------------------------------------------------------
-// POST /api/leads  (admin only)
-// ---------------------------------------------------------------------------
 
 export const POST = withPermission(
   ['admin'],

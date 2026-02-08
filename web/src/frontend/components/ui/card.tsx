@@ -1,9 +1,5 @@
 import { cn } from '@/frontend/lib/utils';
 
-// ============================================
-// Card
-// ============================================
-
 interface CardProps {
   className?: string;
   children: React.ReactNode;
@@ -22,10 +18,6 @@ export function Card({ className, children }: CardProps) {
     </div>
   );
 }
-
-// ============================================
-// Card Header
-// ============================================
 
 interface CardHeaderProps {
   className?: string;
@@ -46,10 +38,6 @@ export function CardHeader({ className, children }: CardHeaderProps) {
   );
 }
 
-// ============================================
-// Card Title
-// ============================================
-
 interface CardTitleProps {
   className?: string;
   children: React.ReactNode;
@@ -68,10 +56,6 @@ export function CardTitle({ className, children }: CardTitleProps) {
   );
 }
 
-// ============================================
-// Card Body
-// ============================================
-
 interface CardBodyProps {
   className?: string;
   children: React.ReactNode;
@@ -80,10 +64,6 @@ interface CardBodyProps {
 export function CardBody({ className, children }: CardBodyProps) {
   return <div className={cn('px-6 py-4', className)}>{children}</div>;
 }
-
-// ============================================
-// Card Footer
-// ============================================
 
 interface CardFooterProps {
   className?: string;

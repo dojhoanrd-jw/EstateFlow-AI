@@ -6,18 +6,10 @@ import { API_ROUTES } from '@/shared/routes/api.routes';
 import type { MessageWithSender, ConversationWithLead, ApiResponse } from '@/shared/types';
 import type { KeyedMutator } from 'swr';
 
-// ============================================
-// useConversationSync
-//
-// Handles optimistic patching of conversations
-// in the SWR cache and selection with read-marking.
-// ============================================
-
 export function useConversationSync(
   conversations: ConversationWithLead[],
   mutateConversations: KeyedMutator<ApiResponse<ConversationWithLead[]>>,
 ) {
-  // Optimistic update: patch a single conversation in the SWR cache (no API call)
   const patchConversation = useCallback(
     (id: string, patch: Partial<ConversationWithLead>) => {
       mutateConversations(
@@ -36,11 +28,9 @@ export function useConversationSync(
     [mutateConversations],
   );
 
-  // Ref to avoid capturing `conversations` in handleIncomingMessage deps
   const conversationsRef = useRef(conversations);
   conversationsRef.current = conversations;
 
-  // When a WebSocket message arrives, update conversation metadata locally
   const handleIncomingMessage = useCallback(
     (msg: MessageWithSender) => {
       const current = conversationsRef.current;
@@ -57,7 +47,6 @@ export function useConversationSync(
     [patchConversation],
   );
 
-  // Select a conversation: optimistically clear unread + persist to DB
   const markAsRead = useCallback(
     (id: string) => {
       patchConversation(id, { unread_count: 0, is_read: true });

@@ -3,10 +3,6 @@ import { cn } from '@/frontend/lib/utils';
 import { Card, CardHeader, CardTitle, CardBody } from '@/frontend/components/ui/card';
 import { Avatar } from '@/frontend/components/ui/avatar';
 
-// ============================================
-// Types
-// ============================================
-
 interface AgentData {
   agent_id: string;
   agent_name: string;
@@ -18,10 +14,6 @@ interface AgentPerformanceProps {
   agents: AgentData[];
   className?: string;
 }
-
-// ============================================
-// Response rate color helper
-// ============================================
 
 function getRateColor(rate: number): string {
   if (rate >= 90) return 'text-emerald-600 dark:text-emerald-400';
@@ -45,12 +37,7 @@ function getRateBarColor(rate: number): string {
   return 'bg-red-500';
 }
 
-// ============================================
-// Component
-// ============================================
-
 export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
-  // Sort agents by unreplied count (most unreplied first)
   const sortedAgents = useMemo(
     () => [...agents].sort((a, b) => b.unreplied - a.unreplied),
     [agents],
@@ -65,9 +52,6 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
         </span>
       </CardHeader>
 
-      {/* ====================================== */}
-      {/* Desktop table (hidden on mobile)       */}
-      {/* ====================================== */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -95,7 +79,6 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                   key={agent.agent_id}
                   className="transition-colors hover:bg-[var(--color-bg-tertiary)]/50"
                 >
-                  {/* Agent */}
                   <td className="px-6 py-3.5">
                     <div className="flex items-center gap-3">
                       <Avatar name={agent.agent_name} size="sm" />
@@ -105,14 +88,12 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                     </div>
                   </td>
 
-                  {/* Total Conversations */}
                   <td className="px-6 py-3.5 text-right">
                     <span className="text-sm font-semibold text-[var(--color-text-primary)] tabular-nums">
                       {agent.count}
                     </span>
                   </td>
 
-                  {/* Unreplied */}
                   <td className="px-6 py-3.5 text-right">
                     <span
                       className={cn(
@@ -126,10 +107,8 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                     </span>
                   </td>
 
-                  {/* Response Rate */}
                   <td className="px-6 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {/* Mini progress bar */}
                       <div className="hidden lg:block h-1.5 w-16 overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
                         <div
                           className={cn(
@@ -167,9 +146,6 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
         </table>
       </div>
 
-      {/* ====================================== */}
-      {/* Mobile card layout                     */}
-      {/* ====================================== */}
       <CardBody className="md:hidden space-y-3">
         {sortedAgents.map((agent) => {
           const responseRate = getResponseRate(agent.count, agent.unreplied);
@@ -179,7 +155,6 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
               key={agent.agent_id}
               className="rounded-lg border border-[var(--color-border-subtle)] p-4 space-y-3"
             >
-              {/* Agent name row */}
               <div className="flex items-center gap-3">
                 <Avatar name={agent.agent_name} size="sm" />
                 <span className="text-sm font-semibold text-[var(--color-text-primary)]">
@@ -187,7 +162,6 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                 </span>
               </div>
 
-              {/* Stats row */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
@@ -222,7 +196,6 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                 </div>
               </div>
 
-              {/* Full-width progress bar */}
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
                 <div
                   className={cn(

@@ -4,10 +4,6 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { cn } from '@/frontend/lib/utils';
 import { Loader2 } from 'lucide-react';
 
-// ============================================
-// Variant + size definitions
-// ============================================
-
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
@@ -27,10 +23,6 @@ const sizeClasses: Record<ButtonSize, string> = {
   md: 'h-9 px-4 text-sm gap-2 rounded-lg',
   lg: 'h-11 px-6 text-sm gap-2.5 rounded-lg',
 };
-
-// ============================================
-// Component
-// ============================================
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;

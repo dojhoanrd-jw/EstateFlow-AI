@@ -7,18 +7,10 @@ import { decode } from 'next-auth/jwt';
 import Redis from 'ioredis';
 import { db } from './src/backend/server/db/client';
 
-// ---------------------------------------------------------------------------
-// Environment
-// ---------------------------------------------------------------------------
-
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOSTNAME || '0.0.0.0';
 const port = parseInt(process.env.PORT || '3000', 10);
 const secret = process.env.AUTH_SECRET;
-
-// ---------------------------------------------------------------------------
-// Socket room authorization (uses shared DB pool from client.ts)
-// ---------------------------------------------------------------------------
 
 async function canAccessConversation(
   userId: string,
@@ -34,28 +26,16 @@ async function canAccessConversation(
   return row !== null;
 }
 
-// ---------------------------------------------------------------------------
-// Cookie parser helper
-// ---------------------------------------------------------------------------
-
 function parseCookie(cookieHeader: string | undefined, name: string): string | null {
   if (!cookieHeader) return null;
   const match = cookieHeader.split(';').find((c) => c.trim().startsWith(`${name}=`));
   return match ? decodeURIComponent(match.split('=').slice(1).join('=').trim()) : null;
 }
 
-// ---------------------------------------------------------------------------
-// Socket user data type
-// ---------------------------------------------------------------------------
-
 interface SocketUser {
   id: string;
   role: string;
 }
-
-// ---------------------------------------------------------------------------
-// Redis adapter setup (optional — falls back to single-instance if no Redis)
-// ---------------------------------------------------------------------------
 
 function createRedisAdapter(io: SocketIOServer): void {
   const redisUrl = process.env.REDIS_URL;
@@ -81,10 +61,6 @@ function createRedisAdapter(io: SocketIOServer): void {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Next.js + Socket.IO server
-// ---------------------------------------------------------------------------
-
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
@@ -103,15 +79,9 @@ app.prepare().then(() => {
     },
   });
 
-  // Store globally so API routes can access it
   (globalThis as Record<string, unknown>).__io = io;
 
-  // Attach Redis adapter for multi-instance scaling (if REDIS_URL is set)
   createRedisAdapter(io);
-
-  // -----------------------------------------------------------------------
-  // Socket.IO auth middleware — verify NextAuth session before connection
-  // -----------------------------------------------------------------------
 
   io.use(async (socket: Socket, next) => {
     try {
@@ -135,7 +105,6 @@ app.prepare().then(() => {
         return next(new Error('Unauthorized'));
       }
 
-      // Attach user data to socket for downstream use
       socket.data.user = {
         id: session.id as string,
         role: session.role as string,
@@ -148,10 +117,6 @@ app.prepare().then(() => {
     }
   });
 
-  // -----------------------------------------------------------------------
-  // Socket.IO event handlers
-  // -----------------------------------------------------------------------
-
   io.on('connection', (socket: Socket) => {
     const user = socket.data.user as SocketUser | undefined;
     console.log(`[socket.io] connected: ${socket.id} (user: ${user?.id})`);
@@ -163,7 +128,6 @@ app.prepare().then(() => {
     socket.on('join', async (conversationId: string) => {
       if (!user) return;
 
-      // Authorize: verify the user has access to this conversation
       const allowed = await canAccessConversation(user.id, user.role, conversationId);
       if (!allowed) {
         socket.emit('error', { message: 'Forbidden: cannot access this conversation' });
@@ -199,10 +163,6 @@ app.prepare().then(() => {
   httpServer.listen(port, hostname, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
   });
-
-  // -----------------------------------------------------------------------
-  // Graceful shutdown
-  // -----------------------------------------------------------------------
 
   let isShuttingDown = false;
 

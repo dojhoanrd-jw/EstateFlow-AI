@@ -5,10 +5,6 @@ import { updateConversationSchema } from '@/shared/validations/schemas';
 import { uuidSchema } from '@/shared/validations/common';
 import type { RouteContext } from '@/shared/types';
 
-// ---------------------------------------------------------------------------
-// GET /api/conversations/[id]
-// ---------------------------------------------------------------------------
-
 export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
     const { id: rawId } = await context.params;
@@ -25,10 +21,6 @@ export const GET = withAuth(async (req: AuthenticatedRequest, context: RouteCont
     return apiError(error);
   }
 });
-
-// ---------------------------------------------------------------------------
-// PUT /api/conversations/[id]
-// ---------------------------------------------------------------------------
 
 export const PUT = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {
@@ -49,10 +41,6 @@ export const PUT = withAuth(async (req: AuthenticatedRequest, context: RouteCont
     return apiError(error);
   }
 });
-
-// ---------------------------------------------------------------------------
-// DELETE /api/conversations/[id]  (soft delete via archiving)
-// ---------------------------------------------------------------------------
 
 export const DELETE = withAuth(async (req: AuthenticatedRequest, context: RouteContext) => {
   try {

@@ -9,30 +9,20 @@ import { NavIcon } from '@/frontend/components/layout/nav-icon';
 import { NAV_ITEMS } from '@/frontend/config/navigation';
 import { UserSection } from '@/frontend/components/layout/user-section';
 
-// ============================================
-// Mobile Nav Props
-// ============================================
-
 interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// ============================================
-// Mobile Navigation Component
-// ============================================
-
 export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close nav when route changes
   useEffect(() => {
     onClose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Lock body scroll when open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -44,7 +34,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
     };
   }, [isOpen]);
 
-  // Escape key to close + focus trap
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isOpen) return;
@@ -82,7 +71,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
   return (
     <>
-      {/* ---- Backdrop overlay ---- */}
       <div
         className={cn(
           'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden',
@@ -94,7 +82,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         aria-hidden="true"
       />
 
-      {/* ---- Slide-in panel ---- */}
       <div
         ref={panelRef}
         role="dialog"
@@ -105,7 +92,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        {/* ---- Header with logo + close ---- */}
         <div className="flex h-14 items-center justify-between border-b border-slate-800 px-5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600/20">
@@ -124,7 +110,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           </button>
         </div>
 
-        {/* ---- Navigation links ---- */}
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Menu
@@ -160,7 +145,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           })}
         </nav>
 
-        {/* ---- User section ---- */}
         <UserSection variant="mobile" />
       </div>
     </>

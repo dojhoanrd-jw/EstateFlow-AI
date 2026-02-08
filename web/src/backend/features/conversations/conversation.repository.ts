@@ -7,10 +7,6 @@ import type {
   ConversationFilters,
 } from '@/shared/validations/schemas';
 
-// ---------------------------------------------------------------------------
-// Column mapping for dynamic updates
-// ---------------------------------------------------------------------------
-
 const UPDATABLE_COLUMNS: Record<keyof UpdateConversationInput, string> = {
   status: 'status',
   is_read: 'is_read',
@@ -18,10 +14,6 @@ const UPDATABLE_COLUMNS: Record<keyof UpdateConversationInput, string> = {
   ai_priority: 'ai_priority',
   ai_tags: 'ai_tags',
 };
-
-// ---------------------------------------------------------------------------
-// SQL Fragments
-// ---------------------------------------------------------------------------
 
 const SELECT_CONVERSATION_WITH_LEAD = `
   SELECT
@@ -73,10 +65,6 @@ const SQL_INSERT = `
   RETURNING *
 `;
 
-// ---------------------------------------------------------------------------
-// Dynamic query builder
-// ---------------------------------------------------------------------------
-
 interface QueryBuilderResult {
   text: string;
   params: unknown[];
@@ -91,29 +79,24 @@ function buildListQuery(
   const params: unknown[] = [];
   let paramIndex = 1;
 
-  // Agent scope
   if (agentId) {
     conditions.push(`c.assigned_agent_id = $${paramIndex++}`);
     params.push(agentId);
   }
 
-  // Status filter (always present due to schema default)
   conditions.push(`c.status = $${paramIndex++}`);
   params.push(filters.status);
 
-  // Priority filter
   if (filters.priority) {
     conditions.push(`c.ai_priority = $${paramIndex++}`);
     params.push(filters.priority);
   }
 
-  // Tag filter (uses array contains operator)
   if (filters.tag) {
     conditions.push(`$${paramIndex++} = ANY(c.ai_tags)`);
     params.push(filters.tag);
   }
 
-  // Full-text search on lead name, email, or conversation summary
   if (filters.search) {
     conditions.push(`(
       l.name ILIKE $${paramIndex}
@@ -160,14 +143,7 @@ function buildListQuery(
   };
 }
 
-// ---------------------------------------------------------------------------
-// Repository
-// ---------------------------------------------------------------------------
-
 export const conversationRepository = {
-  /**
-   * List conversations assigned to a specific agent with filters and pagination.
-   */
   async findByAgent(
     agentId: string,
     filters: ConversationFilters,
@@ -176,24 +152,15 @@ export const conversationRepository = {
     return db.queryMany<ConversationWithLead>(text, params);
   },
 
-  /**
-   * List all conversations (admin view) with filters and pagination.
-   */
   async findAll(filters: ConversationFilters): Promise<ConversationWithLead[]> {
     const { text, params } = buildListQuery(null, filters, 'rows');
     return db.queryMany<ConversationWithLead>(text, params);
   },
 
-  /**
-   * Get a single conversation by ID, including lead info and message counts.
-   */
   async findById(id: string): Promise<ConversationWithLead | null> {
     return db.queryOne<ConversationWithLead>(SQL_FIND_BY_ID, [id]);
   },
 
-  /**
-   * Create a new conversation.
-   */
   async create(data: CreateConversationInput): Promise<Conversation> {
     const result = await db.queryOne<Conversation>(SQL_INSERT, [
       data.lead_id,
@@ -203,10 +170,6 @@ export const conversationRepository = {
     return result;
   },
 
-  /**
-   * Dynamically update a conversation with only the provided fields.
-   * Uses a parameterized SET clause to prevent SQL injection.
-   */
   async update(
     id: string,
     data: UpdateConversationInput,
@@ -216,9 +179,6 @@ export const conversationRepository = {
     return db.queryOne<Conversation>(query.text, query.params);
   },
 
-  /**
-   * Count conversations matching filters, used for pagination metadata.
-   */
   async countByFilters(
     agentId: string | null,
     filters: ConversationFilters,

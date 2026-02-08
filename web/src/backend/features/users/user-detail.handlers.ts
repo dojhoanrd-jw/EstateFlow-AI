@@ -6,10 +6,6 @@ import { updateUserSchema } from '@/shared/validations/schemas';
 import { uuidSchema } from '@/shared/validations/common';
 import type { RouteContext } from '@/shared/types';
 
-// ---------------------------------------------------------------------------
-// GET /api/users/[id]  (admin only)
-// ---------------------------------------------------------------------------
-
 export const GET = withPermission(
   ['admin'],
   async (req: AuthenticatedRequest, context: RouteContext) => {
@@ -25,10 +21,6 @@ export const GET = withPermission(
     }
   },
 );
-
-// ---------------------------------------------------------------------------
-// PUT /api/users/[id]  (admin only)
-// ---------------------------------------------------------------------------
 
 export const PUT = withPermission(
   ['admin'],

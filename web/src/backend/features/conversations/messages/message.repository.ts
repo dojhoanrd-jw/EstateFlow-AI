@@ -1,15 +1,6 @@
 import { db } from '@/backend/server/db/client';
 import type { MessageWithSender, Message } from '@/shared/types';
 
-// ---------------------------------------------------------------------------
-// SQL
-// ---------------------------------------------------------------------------
-
-/**
- * Fetches messages for a conversation with sender name resolved via a
- * conditional JOIN: agent names come from `users`, lead names from `leads`.
- * Uses a window function to compute a running total of messages for context.
- */
 const SQL_FIND_BY_CONVERSATION = `
   SELECT
     m.id,
@@ -31,10 +22,6 @@ const SQL_FIND_BY_CONVERSATION = `
   LIMIT $2 OFFSET $3
 `;
 
-/**
- * Insert a new message and atomically update the parent conversation's
- * last_message_at timestamp in a single CTE to avoid race conditions.
- */
 const SQL_INSERT_MESSAGE = `
   WITH new_message AS (
     INSERT INTO messages (conversation_id, sender_type, sender_id, content, content_type)
@@ -52,10 +39,6 @@ const SQL_INSERT_MESSAGE = `
   SELECT * FROM new_message
 `;
 
-/**
- * Retrieve the sender name for a single message by looking up both
- * users and leads tables.
- */
 const SQL_GET_SENDER_NAME = `
   SELECT COALESCE(u.name, l.name, 'Unknown') AS sender_name
   FROM (SELECT $1::uuid AS sender_id, $2::message_sender_type AS sender_type) input
@@ -65,10 +48,6 @@ const SQL_GET_SENDER_NAME = `
     ON input.sender_type = 'lead' AND l.id = input.sender_id
 `;
 
-/**
- * Mark all unread messages in a conversation as read, but only messages
- * sent by the other party (agents mark lead messages as read, not their own).
- */
 const SQL_MARK_AS_READ = `
   UPDATE messages
   SET is_read = true
@@ -77,9 +56,6 @@ const SQL_MARK_AS_READ = `
     AND sender_type != $2
 `;
 
-/**
- * Also mark the conversation-level is_read flag.
- */
 const SQL_MARK_CONVERSATION_READ = `
   UPDATE conversations
   SET is_read = true, updated_at = NOW()
@@ -92,14 +68,7 @@ const SQL_COUNT_TOTAL = `
   WHERE conversation_id = $1
 `;
 
-// ---------------------------------------------------------------------------
-// Repository
-// ---------------------------------------------------------------------------
-
 export const messageRepository = {
-  /**
-   * Get paginated messages for a conversation, ordered chronologically.
-   */
   async findByConversation(
     conversationId: string,
     page: number,
@@ -113,10 +82,6 @@ export const messageRepository = {
     ]);
   },
 
-  /**
-   * Create a message and update the parent conversation's last_message_at.
-   * Returns the raw message row; caller enriches with sender_name.
-   */
   async create(data: {
     conversation_id: string;
     sender_type: 'agent' | 'lead';
@@ -135,9 +100,6 @@ export const messageRepository = {
     return result;
   },
 
-  /**
-   * Resolve the display name for a message sender.
-   */
   async getSenderName(
     senderId: string,
     senderType: 'agent' | 'lead',
@@ -149,10 +111,6 @@ export const messageRepository = {
     return row?.sender_name ?? 'Unknown';
   },
 
-  /**
-   * Mark all messages from the other party as read within a conversation.
-   * Also updates the conversation-level is_read flag.
-   */
   async markAsRead(
     conversationId: string,
     readerSenderType: 'agent' | 'lead',
@@ -163,9 +121,6 @@ export const messageRepository = {
     ]);
   },
 
-  /**
-   * Count total messages in a conversation (for pagination metadata).
-   */
   async countTotal(conversationId: string): Promise<number> {
     const row = await db.queryOne<{ total: number }>(SQL_COUNT_TOTAL, [
       conversationId,

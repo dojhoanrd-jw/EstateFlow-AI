@@ -1,15 +1,3 @@
-"""Ingest real-estate project documents into the pgvector store.
-
-Workflow
---------
-1. Load JSON project files (or accept raw documents via API).
-2. Flatten each JSON into a human-readable text representation.
-3. Split into overlapping chunks with ``RecursiveCharacterTextSplitter``.
-4. Generate embeddings with OpenAI ``text-embedding-3-small``.
-5. INSERT chunks + embeddings into the ``project_embeddings`` table
-   inside a single transaction (all-or-nothing).
-"""
-
 from __future__ import annotations
 
 import json
@@ -28,20 +16,7 @@ logger = logging.getLogger(__name__)
 DOCUMENTS_DIR = Path(__file__).resolve().parent / "documents"
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
 def _flatten_json(data: dict[str, Any], prefix: str = "") -> str:
-    """Convert a nested dict into a readable multi-line string.
-
-    Produces output like::
-
-        project_name: Torre Alvarez
-        location > city: Ciudad de Mexico
-        unit_types > 0 > type: 1 recamara
-    """
     lines: list[str] = []
     for key, value in data.items():
         full_key = f"{prefix} > {key}" if prefix else key
@@ -58,23 +33,11 @@ def _flatten_json(data: dict[str, Any], prefix: str = "") -> str:
     return "\n".join(lines)
 
 
-# ---------------------------------------------------------------------------
-# Core ingest
-# ---------------------------------------------------------------------------
-
-
 def ingest_texts(
     project_name: str,
     texts: list[str],
     metadatas: list[dict[str, Any]] | None = None,
 ) -> int:
-    """Split *texts*, embed them, and store in ``project_embeddings``.
-
-    All inserts happen inside a single database transaction so that a
-    partial failure rolls back cleanly (idempotent ingest).
-
-    Returns the number of chunks created.
-    """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.RAG_CHUNK_SIZE,
         chunk_overlap=settings.RAG_CHUNK_OVERLAP,
@@ -117,13 +80,7 @@ def ingest_texts(
     return len(chunks)
 
 
-# ---------------------------------------------------------------------------
-# JSON-file ingest
-# ---------------------------------------------------------------------------
-
-
 def ingest_project_file(filepath: Path) -> int:
-    """Load a single JSON project file and ingest it."""
     with open(filepath, encoding="utf-8") as fh:
         data: dict[str, Any] = json.load(fh)
 
@@ -133,13 +90,8 @@ def ingest_project_file(filepath: Path) -> int:
 
 
 def ingest_all_project_files() -> int:
-    """Ingest every ``.json`` file found in the documents directory.
-
-    Skips projects that already have embeddings in the database.
-    """
     total = 0
     for path in sorted(DOCUMENTS_DIR.glob("*.json")):
-        # Peek at the file to get the project name
         with open(path, encoding="utf-8") as fh:
             data = json.load(fh)
         project_name = data.get("project_name", path.stem)

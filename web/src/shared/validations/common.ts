@@ -15,10 +15,7 @@ export const paginationSchema = z.object({
 
 export type PaginationParams = z.infer<typeof paginationSchema>;
 
-/**
- * Strips HTML tags from a string. Used as a Zod `.transform()` to prevent
- * stored XSS in user-provided text content.
- */
+// Strips HTML tags to prevent stored XSS in user-provided text
 export function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, '');
 }

@@ -1,5 +1,3 @@
-"""LangChain chain for generating conversation tags."""
-
 from __future__ import annotations
 
 import json
@@ -38,15 +36,9 @@ VALID_TAGS: frozenset[str] = frozenset(
 
 
 def _parse_tags(raw: str) -> list[str]:
-    """Robustly extract a JSON array of tags from LLM output.
-
-    The model *should* return a clean JSON array, but we handle edge cases
-    like markdown fences or trailing text just in case.
-    """
     # Strip markdown code fences if present
     cleaned = re.sub(r"```(?:json)?", "", raw).strip().strip("`")
 
-    # Attempt direct JSON parse
     try:
         parsed = json.loads(cleaned)
         if isinstance(parsed, list):
@@ -70,7 +62,6 @@ def _parse_tags(raw: str) -> list[str]:
 
 @lru_cache(maxsize=1)
 def build_tagger_chain() -> Runnable:
-    """Return a cached LCEL chain: prompt | llm | parser."""
     llm = get_llm(temperature=0.0)
     return TAGGER_PROMPT | llm | StrOutputParser()
 
@@ -79,20 +70,6 @@ async def generate_tags(
     conversation_text: str,
     project_context: str = "",
 ) -> list[str]:
-    """Invoke the tagger chain and return validated tags.
-
-    Parameters
-    ----------
-    conversation_text:
-        The formatted conversation transcript.
-    project_context:
-        Relevant RAG chunks about the real-estate project(s).
-
-    Returns
-    -------
-    list[str]
-        Validated list of applicable tags.
-    """
     chain = build_tagger_chain()
     raw: str = await chain.ainvoke(
         {

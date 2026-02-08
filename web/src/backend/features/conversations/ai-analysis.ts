@@ -4,10 +4,6 @@ import { broadcastToConversation } from '@/backend/server/socket/io';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
-// ---------------------------------------------------------------------------
-// Retry constants
-// ---------------------------------------------------------------------------
-
 const MAX_RETRIES = 3;
 const RETRY_BASE_MS = 2_000;
 
@@ -18,10 +14,6 @@ function delay(ms: number): Promise<void> {
 function isRetryable(status: number): boolean {
   return status >= 500 || status === 408 || status === 429;
 }
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface MessageForAnalysis {
   sender_type: 'agent' | 'lead';
@@ -47,18 +39,10 @@ const SQL_ALL_MESSAGES_WITH_SENDERS = `
   ORDER BY m.created_at ASC
 `;
 
-// ---------------------------------------------------------------------------
-// Debounce: coalesce rapid consecutive messages into a single AI call
-// ---------------------------------------------------------------------------
-
 const DEBOUNCE_MS = 2_000;
 const MAX_PENDING_TIMERS = 5_000;
 const pendingTimers = new Map<string, NodeJS.Timeout>();
 
-/**
- * Debounced wrapper around triggerAIAnalysis.
- * Resets the timer on each call so only the last message in a burst triggers analysis.
- */
 export function debouncedTriggerAIAnalysis(conversationId: string): void {
   const existing = pendingTimers.get(conversationId);
   if (existing) clearTimeout(existing);
@@ -70,7 +54,7 @@ export function debouncedTriggerAIAnalysis(conversationId: string): void {
 
   pendingTimers.set(conversationId, timer);
 
-  // Safety cap: flush oldest entries immediately if map grows too large
+  // Flush oldest entries immediately if map grows too large
   if (pendingTimers.size > MAX_PENDING_TIMERS) {
     const excess = pendingTimers.size - MAX_PENDING_TIMERS;
     let cleared = 0;
@@ -84,11 +68,6 @@ export function debouncedTriggerAIAnalysis(conversationId: string): void {
   }
 }
 
-/**
- * Trigger AI analysis for a conversation with exponential backoff retry.
- * Fetches all messages, sends them to the AI service, and updates the conversation
- * with the results. Designed to be called fire-and-forget (don't await).
- */
 async function triggerAIAnalysis(conversationId: string): Promise<void> {
   try {
     const messages = await db.queryMany<MessageForAnalysis>(

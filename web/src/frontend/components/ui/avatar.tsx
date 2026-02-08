@@ -1,9 +1,5 @@
 import { cn, getInitials } from '@/frontend/lib/utils';
 
-// ============================================
-// Types
-// ============================================
-
 type AvatarSize = 'sm' | 'md' | 'lg';
 
 interface AvatarProps {
@@ -13,19 +9,11 @@ interface AvatarProps {
   className?: string;
 }
 
-// ============================================
-// Size classes
-// ============================================
-
 const sizeClasses: Record<AvatarSize, string> = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-10 w-10 text-sm',
   lg: 'h-12 w-12 text-base',
 };
-
-// ============================================
-// Deterministic background color from name
-// ============================================
 
 const avatarColors = [
   'bg-teal-600',
@@ -56,10 +44,6 @@ function getAvatarColor(name: string): string {
   avatarColorCache.set(name, color);
   return color;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
   const initials = getInitials(name);

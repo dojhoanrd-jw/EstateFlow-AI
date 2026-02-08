@@ -1,18 +1,10 @@
 import { cn } from '@/frontend/lib/utils';
 import type { TypingUser } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 interface TypingIndicatorProps {
   typingUsers: TypingUser[];
   className?: string;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps) {
   const activeTypers = typingUsers.filter((u) => u.is_typing);
@@ -36,7 +28,6 @@ export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps
           'shadow-[var(--shadow-sm)]',
         )}
       >
-        {/* Bouncing dots */}
         <div className="flex items-center gap-1">
           <span
             className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-tertiary)] animate-[typing-bounce_1.4s_ease-in-out_infinite]"
@@ -57,7 +48,6 @@ export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps
         </span>
       </div>
 
-      {/* CSS keyframes injected via style tag */}
       <style>{`
         @keyframes typing-bounce {
           0%, 60%, 100% {

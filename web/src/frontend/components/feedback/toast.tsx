@@ -13,10 +13,6 @@ import {
 import { cn } from '@/frontend/lib/utils';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
-// ============================================
-// Types
-// ============================================
-
 type ToastType = 'success' | 'error' | 'info';
 
 interface Toast {
@@ -33,15 +29,7 @@ interface ToastContextValue {
   info: (message: string, duration?: number) => void;
 }
 
-// ============================================
-// Context
-// ============================================
-
 const ToastContext = createContext<ToastContextValue | null>(null);
-
-// ============================================
-// Hook
-// ============================================
 
 export function useToast(): ToastContextValue {
   const ctx = useContext(ToastContext);
@@ -52,10 +40,6 @@ export function useToast(): ToastContextValue {
 
   return ctx;
 }
-
-// ============================================
-// Icon map
-// ============================================
 
 const iconMap: Record<ToastType, typeof CheckCircle> = {
   success: CheckCircle,
@@ -78,10 +62,6 @@ const iconColorClasses: Record<ToastType, string> = {
   info: 'text-blue-500',
 };
 
-// ============================================
-// Single Toast Item
-// ============================================
-
 interface ToastItemProps {
   toast: Toast;
   onDismiss: (id: string) => void;
@@ -103,7 +83,6 @@ function ToastItem({ toast: t, onDismiss }: ToastItemProps) {
     };
   }, [dismiss, t.duration]);
 
-  // Pause timer on hover
   const handleMouseEnter = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   };
@@ -145,10 +124,6 @@ function ToastItem({ toast: t, onDismiss }: ToastItemProps) {
   );
 }
 
-// ============================================
-// Provider
-// ============================================
-
 interface ToastProviderProps {
   children: ReactNode;
 }
@@ -184,7 +159,6 @@ export function ToastProvider({ children }: ToastProviderProps) {
     <ToastContext.Provider value={ctx}>
       {children}
 
-      {/* Toast container - bottom right */}
       <div
         aria-live="polite"
         aria-label="Notifications"

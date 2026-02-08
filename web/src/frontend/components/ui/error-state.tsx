@@ -1,20 +1,12 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 
-// ============================================
-// Types
-// ============================================
-
 interface ErrorStateProps {
   title: string;
   description: string;
   onRetry?: () => void;
   className?: string;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function ErrorState({ title, description, onRetry, className }: ErrorStateProps) {
   return (

@@ -1,7 +1,3 @@
-// ============================================
-// User
-// ============================================
-
 export type UserRole = 'admin' | 'agent';
 
 export interface User {
@@ -14,10 +10,6 @@ export interface User {
   created_at: string;
   updated_at: string;
 }
-
-// ============================================
-// Lead
-// ============================================
 
 export interface Lead {
   id: string;
@@ -32,10 +24,6 @@ export interface Lead {
   created_at: string;
   updated_at: string;
 }
-
-// ============================================
-// Conversation
-// ============================================
 
 export type ConversationPriority = 'high' | 'medium' | 'low';
 export type ConversationStatus = 'active' | 'archived';
@@ -64,10 +52,6 @@ export interface ConversationWithLead extends Conversation {
   unread_count: number;
 }
 
-// ============================================
-// Message
-// ============================================
-
 export type MessageSenderType = 'agent' | 'lead';
 export type MessageContentType = 'text' | 'image';
 
@@ -85,10 +69,6 @@ export interface Message {
 export interface MessageWithSender extends Message {
   sender_name: string;
 }
-
-// ============================================
-// Dashboard
-// ============================================
 
 export interface DashboardStats {
   total_conversations: number;
@@ -112,19 +92,11 @@ export interface DashboardStats {
   }[];
 }
 
-// ============================================
-// AI
-// ============================================
-
 export interface AIAnalysis {
   summary: string;
   tags: string[];
   priority: ConversationPriority;
 }
-
-// ============================================
-// API Responses
-// ============================================
 
 export interface ApiResponse<T> {
   data: T;
@@ -138,10 +110,6 @@ export interface ApiErrorResponse {
     issues?: { field: string; message: string }[];
   };
 }
-
-// ============================================
-// WebSocket Events
-// ============================================
 
 export interface WSNewMessage {
   conversation_id: string;
@@ -159,17 +127,9 @@ export interface WSConversationUpdate {
   conversation: ConversationWithLead;
 }
 
-// ============================================
-// Typing Indicator
-// ============================================
-
 export interface TypingUser {
   user_name: string;
   is_typing: boolean;
 }
-
-// ============================================
-// Next.js Route Context
-// ============================================
 
 export type RouteContext = { params: Promise<Record<string, string>> };

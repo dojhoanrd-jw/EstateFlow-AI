@@ -14,19 +14,11 @@ import { AITags } from './ai-tags';
 import { AIPriorityBadge } from './ai-priority-badge';
 import type { ConversationWithLead } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 interface LeadInfoPanelProps {
   conversation: ConversationWithLead | null;
   onClose?: () => void;
   className?: string;
 }
-
-// ============================================
-// Info row helper
-// ============================================
 
 function InfoRow({
   icon: Icon,
@@ -56,10 +48,6 @@ function InfoRow({
   );
 }
 
-// ============================================
-// Empty state
-// ============================================
-
 function EmptyPanel() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
@@ -75,10 +63,6 @@ function EmptyPanel() {
     </div>
   );
 }
-
-// ============================================
-// Component
-// ============================================
 
 export function LeadInfoPanel({
   conversation,
@@ -119,7 +103,6 @@ export function LeadInfoPanel({
         className,
       )}
     >
-      {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-default)] px-4 py-3">
         <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
           Lead Info
@@ -136,9 +119,7 @@ export function LeadInfoPanel({
         )}
       </div>
 
-      {/* Content */}
       <div className="flex-1 space-y-5 p-4">
-        {/* Contact Info */}
         <Card>
           <CardBody className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
@@ -150,7 +131,6 @@ export function LeadInfoPanel({
           </CardBody>
         </Card>
 
-        {/* Project Details */}
         <Card>
           <CardBody className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
@@ -165,19 +145,13 @@ export function LeadInfoPanel({
           </CardBody>
         </Card>
 
-        {/* AI Analysis */}
         <div className="space-y-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] px-1">
             AI Analysis
           </h3>
 
-          {/* AI Priority */}
           <AIPriorityBadge priority={ai_priority} />
-
-          {/* AI Tags */}
           <AITags tags={ai_tags ?? []} />
-
-          {/* AI Summary */}
           <AISummary summary={ai_summary} />
         </div>
       </div>

@@ -3,10 +3,6 @@ import { buildUpdateQuery } from '@/backend/server/db/build-update-query';
 import type { Lead } from '@/shared/types';
 import type { CreateLeadInput, UpdateLeadInput } from '@/shared/validations/schemas';
 
-// ---------------------------------------------------------------------------
-// SQL Fragments
-// ---------------------------------------------------------------------------
-
 const LEAD_COLUMNS = [
   'id', 'name', 'email', 'phone', 'project_interest',
   'source', 'budget', 'notes', 'assigned_agent_id',
@@ -42,10 +38,6 @@ const SQL_COUNT_ALL = `
   SELECT COUNT(*)::int AS total FROM leads
 `;
 
-// ---------------------------------------------------------------------------
-// Column mapping for dynamic updates
-// ---------------------------------------------------------------------------
-
 const UPDATABLE_COLUMNS: Record<keyof UpdateLeadInput, string> = {
   name: 'name',
   email: 'email',
@@ -57,29 +49,16 @@ const UPDATABLE_COLUMNS: Record<keyof UpdateLeadInput, string> = {
   assigned_agent_id: 'assigned_agent_id',
 };
 
-// ---------------------------------------------------------------------------
-// Repository
-// ---------------------------------------------------------------------------
-
 export const leadRepository = {
-  /**
-   * Retrieve a paginated list of leads ordered by most recently created.
-   */
   async findAll(page: number, limit: number): Promise<Lead[]> {
     const offset = (page - 1) * limit;
     return db.queryMany<Lead>(SQL_FIND_ALL, [limit, offset]);
   },
 
-  /**
-   * Retrieve a single lead by its UUID.
-   */
   async findById(id: string): Promise<Lead | null> {
     return db.queryOne<Lead>(SQL_FIND_BY_ID, [id]);
   },
 
-  /**
-   * Insert a new lead and return the complete row.
-   */
   async create(data: CreateLeadInput): Promise<Lead> {
     const result = await db.queryOne<Lead>(SQL_INSERT, [
       data.name,
@@ -95,20 +74,12 @@ export const leadRepository = {
     return result;
   },
 
-  /**
-   * Dynamically update only the provided fields on a lead.
-   * Builds a parameterized SET clause at runtime to avoid overwriting
-   * fields that were not included in the request body.
-   */
   async update(id: string, data: UpdateLeadInput): Promise<Lead | null> {
     const query = buildUpdateQuery('leads', id, data, UPDATABLE_COLUMNS, LEAD_COLUMNS_STR);
     if (!query) return this.findById(id);
     return db.queryOne<Lead>(query.text, query.params);
   },
 
-  /**
-   * Return the total number of leads for pagination metadata.
-   */
   async countAll(): Promise<number> {
     const row = await db.queryOne<{ total: number }>(SQL_COUNT_ALL);
     return row?.total ?? 0;

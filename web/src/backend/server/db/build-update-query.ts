@@ -1,26 +1,9 @@
-// ---------------------------------------------------------------------------
-// Shared dynamic UPDATE query builder
-//
-// Builds a parameterized SET clause from a partial object, using a column
-// mapping to translate DTO keys to SQL column names. Automatically appends
-// `updated_at = NOW()` and the WHERE clause for the primary key.
-// ---------------------------------------------------------------------------
-
 interface UpdateQueryResult {
   text: string;
   params: unknown[];
 }
 
-/**
- * Builds a dynamic UPDATE query from a partial DTO.
- *
- * @param table        - SQL table name
- * @param id           - Row primary key value
- * @param data         - Partial DTO with only the fields to update
- * @param columnMap    - Maps DTO keys → SQL column names
- * @param returning    - RETURNING clause columns (default: '*')
- * @returns `null` if no fields need updating, otherwise `{ text, params }`
- */
+// Builds a parameterized UPDATE query from a partial DTO. Returns null if no fields need updating.
 export function buildUpdateQuery<T extends Record<string, unknown>>(
   table: string,
   id: string,

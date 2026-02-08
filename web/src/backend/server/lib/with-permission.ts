@@ -24,7 +24,6 @@ export function withPermission(allowedRoles: Role[], handler: HandlerFn) {
     try {
       validateOrigin(req);
 
-      // Reject oversized request bodies
       const contentLength = req.headers.get('content-length');
       if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
         throw ApiError.tooLarge('Request body too large (max 1 MB)');

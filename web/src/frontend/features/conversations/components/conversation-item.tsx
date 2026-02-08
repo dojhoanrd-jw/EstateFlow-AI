@@ -7,19 +7,11 @@ import { cn, formatDate } from '@/frontend/lib/utils';
 import { useTimestamp } from '@/frontend/hooks/use-timestamp';
 import type { ConversationWithLead } from '@/shared/types';
 
-// ============================================
-// Types
-// ============================================
-
 interface ConversationItemProps {
   conversation: ConversationWithLead;
   isSelected: boolean;
   onClick: (id: string) => void;
 }
-
-// ============================================
-// Component
-// ============================================
 
 export const ConversationItem = memo(function ConversationItem({
   conversation,
@@ -58,7 +50,6 @@ export const ConversationItem = memo(function ConversationItem({
       )}
     >
       <div className="flex items-start gap-3">
-        {/* Avatar */}
         <div className="relative shrink-0">
           <Avatar name={lead_name} size="sm" />
           {hasUnread && (
@@ -70,9 +61,7 @@ export const ConversationItem = memo(function ConversationItem({
           )}
         </div>
 
-        {/* Content */}
         <div className="min-w-0 flex-1">
-          {/* Top row: name + timestamp */}
           <div className="flex items-center justify-between gap-2">
             <span
               className={cn(
@@ -91,7 +80,6 @@ export const ConversationItem = memo(function ConversationItem({
             )}
           </div>
 
-          {/* Message preview */}
           <p
             className={cn(
               'mt-0.5 truncate text-xs leading-relaxed',
@@ -103,7 +91,6 @@ export const ConversationItem = memo(function ConversationItem({
             {last_message ?? 'No messages yet'}
           </p>
 
-          {/* Bottom row: badges */}
           <div className="mt-1.5 flex items-center gap-1.5">
             <Badge variant="priority" level={ai_priority} className="text-[10px] px-1.5 py-0">
               {ai_priority}
@@ -115,7 +102,6 @@ export const ConversationItem = memo(function ConversationItem({
               </Badge>
             ))}
 
-            {/* Unread count */}
             {unread_count > 0 && (
               <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-accent-600)] px-1.5 text-[10px] font-bold text-white">
                 {unread_count > 99 ? '99+' : unread_count}
