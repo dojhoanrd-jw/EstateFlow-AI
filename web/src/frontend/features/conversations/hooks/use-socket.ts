@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { io, type Socket } from 'socket.io-client';
+import type { MessageWithSender } from '@/shared/types';
 
 // ============================================
 // Types
@@ -12,12 +14,96 @@ interface TypingUser {
 }
 
 // ============================================
-// useTypingIndicator
-//
-// Placeholder hook that simulates typing.
-// After the agent sends a message, it shows
-// the lead "typing" for a short period to
-// simulate a real-time experience.
+// Singleton Socket.IO connection
+// ============================================
+
+let socketInstance: Socket | null = null;
+
+function getSocket(): Socket {
+  if (!socketInstance) {
+    socketInstance = io({
+      path: '/socket.io',
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+    });
+  }
+  return socketInstance;
+}
+
+// ============================================
+// useSocket — Socket.IO powered
+// ============================================
+
+export function useSocket(conversationId: string | null) {
+  const [isConnected, setIsConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const prevRoomRef = useRef<string | null>(null);
+  const onMessageRef = useRef<((msg: MessageWithSender) => void) | null>(null);
+
+  useEffect(() => {
+    if (!conversationId) {
+      if (prevRoomRef.current && socketRef.current) {
+        socketRef.current.emit('leave', prevRoomRef.current);
+        prevRoomRef.current = null;
+      }
+      return;
+    }
+
+    const socket = getSocket();
+    socketRef.current = socket;
+
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+
+    if (socket.connected) setIsConnected(true);
+
+    // Room management
+    if (prevRoomRef.current && prevRoomRef.current !== conversationId) {
+      socket.emit('leave', prevRoomRef.current);
+    }
+    socket.emit('join', conversationId);
+    prevRoomRef.current = conversationId;
+
+    // Listen for new messages
+    const handleNewMessage = (data: MessageWithSender) => {
+      if (onMessageRef.current) onMessageRef.current(data);
+    };
+    socket.on('new_message', handleNewMessage);
+
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('new_message', handleNewMessage);
+    };
+  }, [conversationId]);
+
+  const onMessage = useCallback((handler: (msg: MessageWithSender) => void) => {
+    onMessageRef.current = handler;
+  }, []);
+
+  const sendTyping = useCallback(
+    (userName: string) => {
+      if (socketRef.current?.connected && conversationId) {
+        socketRef.current.emit('typing', {
+          conversationId,
+          userName,
+          isTyping: true,
+        });
+      }
+    },
+    [conversationId],
+  );
+
+  return { isConnected, onMessage, sendTyping };
+}
+
+// ============================================
+// useTypingIndicator (simulated for leads)
 // ============================================
 
 export function useTypingIndicator(conversationId: string | null) {
@@ -25,7 +111,6 @@ export function useTypingIndicator(conversationId: string | null) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Clean up timers when conversation changes or component unmounts
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -33,30 +118,20 @@ export function useTypingIndicator(conversationId: string | null) {
     };
   }, [conversationId]);
 
-  // Reset typing state when conversation changes
   useEffect(() => {
     setTypingUsers([]);
   }, [conversationId]);
-
-  // ----------------------------------------
-  // emitTyping: call this after the agent
-  // sends a message to simulate the lead
-  // starting to type a reply
-  // ----------------------------------------
 
   const emitTyping = useCallback(
     (leadName: string = 'Lead') => {
       if (!conversationId) return;
 
-      // Clear any existing timers
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
 
-      // Simulate the lead starting to type after a short delay
       timeoutRef.current = setTimeout(() => {
         setTypingUsers([{ user_name: leadName, is_typing: true }]);
 
-        // Stop typing after 2-4 seconds (random for realism)
         const typingDuration = 2000 + Math.random() * 2000;
         clearTimeoutRef.current = setTimeout(() => {
           setTypingUsers([]);

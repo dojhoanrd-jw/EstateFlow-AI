@@ -1,13 +1,14 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import useSWR from 'swr';
 import { API_ROUTES } from '@/shared/routes/api.routes';
 import { apiPost } from '@/frontend/lib/fetcher';
 import type { MessageWithSender, ApiResponse } from '@/shared/types';
+import { useSocket } from './use-socket';
 
 // ============================================
-// useMessages hook
+// useMessages hook (WebSocket-powered)
 // ============================================
 
 export function useMessages(conversationId: string | null) {
@@ -15,13 +16,33 @@ export function useMessages(conversationId: string | null) {
     ? API_ROUTES.conversations.messages(conversationId)
     : null;
 
+  // Fetch initial message history via REST (no polling)
   const { data, error, isLoading, mutate } = useSWR<ApiResponse<MessageWithSender[]>>(
     url,
     {
-      refreshInterval: 3000,
       revalidateOnFocus: true,
     },
   );
+
+  // Real WebSocket connection for live updates
+  const { isConnected, onMessage } = useSocket(conversationId);
+
+  // Listen for new messages arriving via WebSocket
+  useEffect(() => {
+    onMessage((newMsg: MessageWithSender) => {
+      mutate(
+        (currentData) => {
+          const existing = currentData?.data ?? [];
+          // Avoid duplicates (by id) and replace optimistic temp messages
+          const filtered = existing.filter(
+            (m) => m.id !== newMsg.id && !m.id.startsWith('temp-'),
+          );
+          return { data: [...filtered, newMsg] };
+        },
+        { revalidate: false },
+      );
+    });
+  }, [onMessage, mutate]);
 
   // ----------------------------------------
   // Send a new message with optimistic update
@@ -78,6 +99,7 @@ export function useMessages(conversationId: string | null) {
     messages: data?.data ?? [],
     isLoading,
     error,
+    isConnected,
     mutate,
     sendMessage,
   };

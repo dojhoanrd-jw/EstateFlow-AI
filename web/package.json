@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node server.mjs",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.mjs",
     "lint": "next lint",
     "db:migrate": "node src/backend/server/db/migrate.js",
     "db:seed": "tsx src/backend/server/db/seed.ts"

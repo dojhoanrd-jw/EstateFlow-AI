@@ -3,6 +3,7 @@ import { apiSuccess, apiCreated, apiError } from '@/backend/server/lib/api-respo
 import { messageService } from './message.service';
 import { createMessageSchema } from '@/shared/validations/schemas';
 import { paginationSchema } from '@/shared/validations/common';
+import { broadcastToConversation } from '@/backend/server/socket/io';
 
 type RouteContext = { params: Promise<Record<string, string>> };
 
@@ -50,6 +51,9 @@ export const POST = withAuth(async (req: AuthenticatedRequest, context: RouteCon
       req.user.role,
       data,
     );
+
+    // Broadcast to WebSocket clients (in-process, no HTTP call)
+    broadcastToConversation(conversationId, 'new_message', message);
 
     return apiCreated(message);
   } catch (error) {

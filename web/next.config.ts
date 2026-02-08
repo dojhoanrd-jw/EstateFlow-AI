@@ -1,8 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
-  serverExternalPackages: ['pg'],
+  serverExternalPackages: ['pg', 'socket.io'],
 };
 
 export default nextConfig;

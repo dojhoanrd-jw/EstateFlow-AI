@@ -46,7 +46,7 @@ export function ConversationsPage() {
   // ----------------------------------------
 
   const { conversations, isLoading: isLoadingConversations } = useConversations(filters);
-  const { messages, isLoading: isLoadingMessages, sendMessage } = useMessages(selectedConversationId);
+  const { messages, isLoading: isLoadingMessages, isConnected, sendMessage } = useMessages(selectedConversationId);
 
   // Find the currently selected conversation object
   const selectedConversation = useMemo(
@@ -174,9 +174,16 @@ export function ConversationsPage() {
                 <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
                   {selectedConversation.lead_name}
                 </h2>
-                <p className="text-[10px] text-[var(--color-text-tertiary)]">
-                  {selectedConversation.message_count} messages
-                </p>
+                <div className="flex items-center gap-2 text-[10px] text-[var(--color-text-tertiary)]">
+                  <span>{selectedConversation.message_count} messages</span>
+                  <span className="flex items-center gap-1">
+                    <span className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      isConnected ? 'bg-emerald-500' : 'bg-amber-500',
+                    )} />
+                    {isConnected ? 'Live' : 'Connecting...'}
+                  </span>
+                </div>
               </div>
             </div>
 
