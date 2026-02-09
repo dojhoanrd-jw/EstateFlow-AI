@@ -1,15 +1,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import { MessageSquare, MessageCircle, Flame, Clock } from 'lucide-react';
 import { Skeleton } from '@/frontend/components/ui/skeleton';
 import { Card, CardHeader, CardBody } from '@/frontend/components/ui/card';
 import { ErrorState } from '@/frontend/components/ui/error-state';
-import { MESSAGES } from '@/shared/messages';
 import { useDashboard } from '../hooks/use-dashboard';
 import { StatsCard } from '../components/stats-card';
 
-// Code-split heavy chart components — only loaded after dashboard data arrives
 const PriorityChart = dynamic(
   () => import('../components/priority-chart').then((m) => m.PriorityChart),
   { ssr: false },
@@ -127,12 +126,13 @@ function formatResponseTime(minutes: number): string {
 
 export function DashboardPage() {
   const { stats, isLoading, error, mutate } = useDashboard();
+  const t = useTranslations('dashboard');
 
   if (error) {
     return (
       <ErrorState
-        title="Failed to load dashboard"
-        description={MESSAGES.general.serverError}
+        title={t('errorTitle')}
+        description={t('errorDescription')}
         onRetry={() => mutate()}
         className="min-h-[60vh] p-6"
       />
@@ -169,10 +169,10 @@ export function DashboardPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
-            Dashboard
+            {t('title')}
           </h1>
           <p className="mt-1 text-sm text-[var(--color-text-tertiary)]">
-            Real-time overview of your sales pipeline
+            {t('subtitle')}
           </p>
         </div>
 
@@ -182,7 +182,7 @@ export function DashboardPage() {
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           </span>
           <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-            Live
+            {t('live')}
           </span>
         </div>
       </div>
@@ -190,30 +190,30 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <StatsCard
           icon={MessageSquare}
-          title="Total Conversations"
+          title={t('totalConversations')}
           value={stats?.total_conversations ?? 0}
-          subtitle="All active conversations"
+          subtitle={t('totalConversationsDesc')}
           color="blue"
         />
         <StatsCard
           icon={MessageCircle}
-          title="Unreplied"
+          title={t('unreplied')}
           value={stats?.unreplied_conversations ?? 0}
-          subtitle="Awaiting agent response"
+          subtitle={t('unrepliedDesc')}
           color="red"
         />
         <StatsCard
           icon={Flame}
-          title="Hot Leads Unattended"
+          title={t('hotLeads')}
           value={stats?.high_priority_unattended ?? 0}
-          subtitle="High priority without reply"
+          subtitle={t('hotLeadsDesc')}
           color="orange"
         />
         <StatsCard
           icon={Clock}
-          title="Avg Response Time"
+          title={t('avgResponseTime')}
           value={formatResponseTime(stats?.avg_response_time_minutes ?? 0)}
-          subtitle="Average first reply time"
+          subtitle={t('avgResponseTimeDesc')}
           color="green"
         />
       </div>

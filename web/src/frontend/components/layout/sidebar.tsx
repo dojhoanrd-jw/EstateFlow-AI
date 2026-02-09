@@ -2,14 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Building2 } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 import { NavIcon } from '@/frontend/components/layout/nav-icon';
 import { NAV_ITEMS } from '@/frontend/config/navigation';
 import { UserSection } from '@/frontend/components/layout/user-section';
+import { LanguageSwitcher } from '@/frontend/components/ui/language-switcher';
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations('nav');
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-800 bg-slate-900 lg:flex">
@@ -24,7 +27,7 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-          Menu
+          {t('menu')}
         </p>
         {NAV_ITEMS.map((item) => {
           const isActive =
@@ -52,7 +55,7 @@ export function Sidebar() {
                     : 'text-slate-500 group-hover:text-slate-300',
                 )}
               />
-              {item.label}
+              {t(item.labelKey)}
               {isActive && (
                 <span className="ml-auto h-1.5 w-1.5 rounded-full bg-teal-400" />
               )}
@@ -61,6 +64,7 @@ export function Sidebar() {
         })}
       </nav>
 
+      <LanguageSwitcher variant="sidebar" />
       <UserSection variant="sidebar" />
     </aside>
   );

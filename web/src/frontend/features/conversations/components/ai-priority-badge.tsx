@@ -1,4 +1,7 @@
+'use client';
+
 import { AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/frontend/components/ui/badge';
 import { cn } from '@/frontend/lib/utils';
 import type { ConversationPriority } from '@/shared/types';
@@ -12,28 +15,29 @@ const priorityConfig: Record<
   ConversationPriority,
   {
     icon: React.ComponentType<{ size?: number; className?: string }>;
-    label: string;
-    description: string;
+    labelKey: string;
+    descKey: string;
   }
 > = {
   high: {
     icon: AlertTriangle,
-    label: 'High Priority',
-    description: 'Requires immediate attention',
+    labelKey: 'highPriorityLabel',
+    descKey: 'highPriorityDesc',
   },
   medium: {
     icon: Clock,
-    label: 'Medium Priority',
-    description: 'Follow up within 24 hours',
+    labelKey: 'mediumPriorityLabel',
+    descKey: 'mediumPriorityDesc',
   },
   low: {
     icon: CheckCircle,
-    label: 'Low Priority',
-    description: 'Can be addressed at regular pace',
+    labelKey: 'lowPriorityLabel',
+    descKey: 'lowPriorityDesc',
   },
 };
 
 export function AIPriorityBadge({ priority, className }: AIPriorityBadgeProps) {
+  const t = useTranslations('conversations');
   const config = priorityConfig[priority];
   const Icon = config.icon;
 
@@ -48,10 +52,10 @@ export function AIPriorityBadge({ priority, className }: AIPriorityBadgeProps) {
     >
       <Badge variant="priority" level={priority} className="gap-1 px-2.5 py-1 text-xs">
         <Icon size={12} />
-        {config.label}
+        {t(config.labelKey)}
       </Badge>
       <span className="text-[10px] text-[var(--color-text-tertiary)]">
-        {config.description}
+        {t(config.descKey)}
       </span>
     </div>
   );

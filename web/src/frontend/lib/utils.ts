@@ -1,13 +1,15 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { formatDistanceToNowStrict, parseISO, isValid } from 'date-fns';
+import { parseISO, isValid } from 'date-fns';
 import type { ConversationPriority } from '@/shared/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: string | Date): string {
+type TranslateFn = (key: string, values?: Record<string, string | number | Date>) => string;
+
+export function formatDate(date: string | Date, t?: TranslateFn, locale?: string): string {
   const parsed = typeof date === 'string' ? parseISO(date) : date;
 
   if (!isValid(parsed)) return '';
@@ -19,15 +21,21 @@ export function formatDate(date: string | Date): string {
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSeconds < 60) return 'just now';
-  if (diffMinutes < 60) return `${diffMinutes}min ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return 'yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (t) {
+    if (diffSeconds < 60) return t('justNow');
+    if (diffMinutes < 60) return t('minAgo', { count: diffMinutes });
+    if (diffHours < 24) return t('hAgo', { count: diffHours });
+    if (diffDays === 1) return t('yesterdayRelative');
+    if (diffDays < 7) return t('dAgo', { count: diffDays });
+  } else {
+    if (diffSeconds < 60) return 'just now';
+    if (diffMinutes < 60) return `${diffMinutes}min ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return 'yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+  }
 
-  return formatDistanceToNowStrict(parsed, {
-    addSuffix: true,
-  });
+  return parsed.toLocaleDateString(locale ?? 'en', { month: 'short', day: 'numeric' });
 }
 
 const mxnFormatter = new Intl.NumberFormat('es-MX', {

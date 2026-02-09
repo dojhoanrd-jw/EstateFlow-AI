@@ -3,7 +3,9 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { MessageSquare } from 'lucide-react';
-import { parseISO, format, isSameDay } from 'date-fns';
+import { parseISO, isSameDay } from 'date-fns';
+import { useTranslations } from 'next-intl';
+import { useLocale } from '@/frontend/i18n/locale-context';
 import { Skeleton } from '@/frontend/components/ui/skeleton';
 import { cn } from '@/frontend/lib/utils';
 import { MessageBubble } from './message-bubble';
@@ -39,6 +41,8 @@ function buildItems(messages: MessageWithSender[]): ThreadItem[] {
 }
 
 function DateSeparator({ date }: { date: string }) {
+  const t = useTranslations('conversations');
+  const { locale } = useLocale();
   const parsed = parseISO(date);
   const today = new Date();
   const yesterday = new Date(today);
@@ -46,11 +50,11 @@ function DateSeparator({ date }: { date: string }) {
 
   let label: string;
   if (isSameDay(parsed, today)) {
-    label = 'Today';
+    label = t('today');
   } else if (isSameDay(parsed, yesterday)) {
-    label = 'Yesterday';
+    label = t('yesterday');
   } else {
-    label = format(parsed, 'EEEE, MMM d, yyyy');
+    label = parsed.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   return (
@@ -89,16 +93,18 @@ function MessageThreadSkeleton() {
 }
 
 function NoConversationSelected() {
+  const t = useTranslations('conversations');
+
   return (
     <div className="flex h-full flex-col items-center justify-center px-8 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)]">
         <MessageSquare className="h-8 w-8 text-[var(--color-text-tertiary)]" />
       </div>
       <h3 className="mt-5 text-base font-semibold text-[var(--color-text-primary)]">
-        Select a conversation
+        {t('selectConversation')}
       </h3>
       <p className="mt-2 max-w-xs text-sm text-[var(--color-text-tertiary)]">
-        Choose a conversation from the list to start chatting with your leads.
+        {t('selectConversationDesc')}
       </p>
     </div>
   );

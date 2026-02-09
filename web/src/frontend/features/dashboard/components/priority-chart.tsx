@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 import { Card, CardHeader, CardTitle, CardBody } from '@/frontend/components/ui/card';
@@ -13,7 +16,7 @@ interface PriorityChartProps {
 
 interface PriorityRow {
   key: 'high' | 'medium' | 'low';
-  label: string;
+  labelKey: 'priorityHigh' | 'priorityMedium' | 'priorityLow';
   icon: typeof AlertTriangle;
   barColor: string;
   bgColor: string;
@@ -24,7 +27,7 @@ interface PriorityRow {
 const priorities: PriorityRow[] = [
   {
     key: 'high',
-    label: 'High',
+    labelKey: 'priorityHigh',
     icon: AlertTriangle,
     barColor: 'bg-red-500 dark:bg-red-400',
     bgColor: 'bg-red-50 dark:bg-red-900/10',
@@ -33,7 +36,7 @@ const priorities: PriorityRow[] = [
   },
   {
     key: 'medium',
-    label: 'Medium',
+    labelKey: 'priorityMedium',
     icon: AlertCircle,
     barColor: 'bg-amber-500 dark:bg-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-900/10',
@@ -42,7 +45,7 @@ const priorities: PriorityRow[] = [
   },
   {
     key: 'low',
-    label: 'Low',
+    labelKey: 'priorityLow',
     icon: CheckCircle2,
     barColor: 'bg-emerald-500 dark:bg-emerald-400',
     bgColor: 'bg-emerald-50 dark:bg-emerald-900/10',
@@ -52,15 +55,16 @@ const priorities: PriorityRow[] = [
 ];
 
 export function PriorityChart({ data, className }: PriorityChartProps) {
+  const t = useTranslations('dashboard');
   const total = data.high + data.medium + data.low;
   const maxCount = Math.max(data.high, data.medium, data.low, 1);
 
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Priority Distribution</CardTitle>
+        <CardTitle>{t('priorityDistribution')}</CardTitle>
         <span className="text-xs font-medium text-[var(--color-text-tertiary)]">
-          {total} total
+          {t('total', { count: total })}
         </span>
       </CardHeader>
 
@@ -70,6 +74,7 @@ export function PriorityChart({ data, className }: PriorityChartProps) {
           const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
           const barWidth = maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 2;
           const Icon = priority.icon;
+          const label = t(priority.labelKey);
 
           return (
             <div key={priority.key} className="space-y-2">
@@ -84,7 +89,7 @@ export function PriorityChart({ data, className }: PriorityChartProps) {
                     <Icon size={14} className={priority.textColor} />
                   </div>
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                    {priority.label}
+                    {label}
                   </span>
                 </div>
 
@@ -106,7 +111,7 @@ export function PriorityChart({ data, className }: PriorityChartProps) {
                   )}
                   style={{ width: `${barWidth}%` }}
                   role="meter"
-                  aria-label={`${priority.label} priority: ${count} conversations (${percentage}%)`}
+                  aria-label={`${label}: ${count} (${percentage}%)`}
                   aria-valuenow={count}
                   aria-valuemin={0}
                   aria-valuemax={total}
@@ -125,7 +130,7 @@ export function PriorityChart({ data, className }: PriorityChartProps) {
               <div key={priority.key} className="flex items-center gap-1.5">
                 <div className={cn('h-2 w-2 rounded-full', priority.dotColor)} />
                 <span className="text-xs text-[var(--color-text-tertiary)]">
-                  {priority.label} {percentage}%
+                  {t(priority.labelKey)} {percentage}%
                 </span>
               </div>
             );

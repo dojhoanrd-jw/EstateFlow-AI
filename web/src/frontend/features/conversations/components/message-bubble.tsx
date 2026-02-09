@@ -1,6 +1,10 @@
+'use client';
+
 import { memo } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn, formatDate } from '@/frontend/lib/utils';
 import { useTimestamp } from '@/frontend/hooks/use-timestamp';
+import { useLocale } from '@/frontend/i18n/locale-context';
 import type { MessageWithSender } from '@/shared/types';
 
 interface MessageBubbleProps {
@@ -9,6 +13,8 @@ interface MessageBubbleProps {
 
 export const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
   useTimestamp();
+  const t = useTranslations('common');
+  const { locale } = useLocale();
 
   const { sender_type, sender_name, content, content_type, created_at } = message;
 
@@ -43,13 +49,13 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
           /^https?:\/\//i.test(content) ? (
             <img
               src={content}
-              alt="Shared image"
+              alt=""
               className="max-h-64 rounded-lg object-cover"
               loading="lazy"
               referrerPolicy="no-referrer"
             />
           ) : (
-            <p className="text-sm italic opacity-60">Invalid image</p>
+            <p className="text-sm italic opacity-60">{t('invalidImage')}</p>
           )
         ) : (
           <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
@@ -63,7 +69,7 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
             isAgent ? 'text-white/50' : 'text-[var(--color-text-tertiary)]',
           )}
         >
-          {formatDate(created_at)}
+          {formatDate(created_at, t, locale)}
         </p>
       </div>
     </div>

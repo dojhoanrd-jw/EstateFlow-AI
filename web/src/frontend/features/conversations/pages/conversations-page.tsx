@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { ArrowLeft, PanelRightOpen, PanelRightClose, WifiOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/frontend/lib/utils';
 import { ErrorState } from '@/frontend/components/ui/error-state';
-import { MESSAGES } from '@/shared/messages';
 import { useConversationPage } from '../hooks/use-conversation-page';
 import { ConversationList } from '../components/conversation-list';
 import { MessageThread } from '../components/message-thread';
@@ -16,6 +16,7 @@ const LeadInfoPanel = dynamic(
 );
 
 export function ConversationsPage() {
+  const t = useTranslations('conversations');
   const {
     selectedConversationId,
     mobileView,
@@ -42,8 +43,8 @@ export function ConversationsPage() {
   if (conversationsError) {
     return (
       <ErrorState
-        title="Failed to load conversations"
-        description={MESSAGES.general.serverError}
+        title={t('errorTitle')}
+        description={t('errorDescription')}
         onRetry={() => retryConversations()}
         className="h-[calc(100vh-3.5rem)] lg:h-screen bg-[var(--color-bg-primary)]"
       />
@@ -55,7 +56,7 @@ export function ConversationsPage() {
       {selectedConversationId && !isConnected && (
         <div className="flex shrink-0 items-center justify-center gap-2 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" role="status">
           <WifiOff size={14} />
-          Reconnecting — messages may be delayed
+          {t('reconnecting')}
         </div>
       )}
 
@@ -90,7 +91,7 @@ export function ConversationsPage() {
             className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
           >
             <ArrowLeft size={16} />
-            Back
+            {t('back')}
           </button>
 
           {selectedConversation && (
@@ -103,7 +104,7 @@ export function ConversationsPage() {
             type="button"
             onClick={handleShowInfoMobile}
             className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
-            aria-label="View lead info"
+            aria-label={t('showInfo')}
           >
             <PanelRightOpen size={16} />
           </button>
@@ -117,7 +118,7 @@ export function ConversationsPage() {
                   {selectedConversation.lead_name}
                 </h2>
                 <span className="text-[10px] text-[var(--color-text-tertiary)]">
-                  {selectedConversation.message_count} messages
+                  {t('messages', { count: selectedConversation.message_count })}
                 </span>
               </div>
             </div>
@@ -126,17 +127,17 @@ export function ConversationsPage() {
               type="button"
               onClick={handleToggleInfoPanel}
               className="hidden xl:flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
-              aria-label={showInfoPanel ? 'Hide lead info' : 'Show lead info'}
+              aria-label={showInfoPanel ? t('hideInfo') : t('showInfo')}
             >
               {showInfoPanel ? (
                 <>
                   <PanelRightClose size={14} />
-                  Hide info
+                  {t('hideInfo')}
                 </>
               ) : (
                 <>
                   <PanelRightOpen size={14} />
-                  Show info
+                  {t('showInfo')}
                 </>
               )}
             </button>

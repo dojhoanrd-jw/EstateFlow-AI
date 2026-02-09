@@ -1,6 +1,9 @@
+'use client';
+
 import { Brain } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card, CardBody } from '@/frontend/components/ui/card';
-import { Skeleton, SkeletonText } from '@/frontend/components/ui/skeleton';
+import { SkeletonText } from '@/frontend/components/ui/skeleton';
 import { cn } from '@/frontend/lib/utils';
 
 interface AISummaryProps {
@@ -9,6 +12,8 @@ interface AISummaryProps {
 }
 
 export function AISummary({ summary, className }: AISummaryProps) {
+  const t = useTranslations('conversations');
+
   return (
     <div
       className={cn(
@@ -24,7 +29,7 @@ export function AISummary({ summary, className }: AISummaryProps) {
               <Brain size={13} className="text-[var(--color-accent-600)]" />
             </div>
             <span className="text-xs font-semibold text-[var(--color-text-primary)]">
-              AI Summary
+              {t('aiSummary')}
             </span>
           </div>
 
@@ -36,7 +41,7 @@ export function AISummary({ summary, className }: AISummaryProps) {
             <div className="space-y-2">
               <SkeletonText lines={3} />
               <p className="text-[10px] text-[var(--color-text-tertiary)] italic">
-                AI summary will appear after analyzing the conversation.
+                {t('aiSummaryPending')}
               </p>
             </div>
           )}

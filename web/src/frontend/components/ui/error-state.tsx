@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 
@@ -9,6 +12,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ title, description, onRetry, className }: ErrorStateProps) {
+  const t = useTranslations('common');
+
   return (
     <div className={cn('flex items-center justify-center', className)}>
       <div className="text-center space-y-4">
@@ -28,7 +33,7 @@ export function ErrorState({ title, description, onRetry, className }: ErrorStat
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent-600)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-accent-700)] transition-colors"
           >
             <RefreshCw size={14} />
-            Retry
+            {t('retry')}
           </button>
         )}
       </div>

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { cn } from '@/frontend/lib/utils';
 import type { TypingUser } from '@/shared/types';
 
@@ -7,17 +10,19 @@ interface TypingIndicatorProps {
 }
 
 export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps) {
+  const t = useTranslations('common');
   const activeTypers = typingUsers.filter((u) => u.is_typing);
 
   if (activeTypers.length === 0) return null;
 
   const names = activeTypers.map((u) => u.user_name);
+  const first = names[0] ?? '';
   const label =
     names.length === 1
-      ? `${names[0]} is typing`
+      ? t('typingOne', { name: first })
       : names.length === 2
-        ? `${names[0]} and ${names[1]} are typing`
-        : `${names[0]} and ${names.length - 1} others are typing`;
+        ? t('typingTwo', { name1: first, name2: names[1] ?? '' })
+        : t('typingMany', { name: first, count: names.length - 1 });
 
   return (
     <div className={cn('flex items-center gap-2 px-4 py-2', className)}>

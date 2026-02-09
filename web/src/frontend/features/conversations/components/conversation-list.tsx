@@ -3,7 +3,8 @@
 import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { MessageSquare } from 'lucide-react';
-import { Skeleton, SkeletonText } from '@/frontend/components/ui/skeleton';
+import { useTranslations } from 'next-intl';
+import { Skeleton } from '@/frontend/components/ui/skeleton';
 import { cn } from '@/frontend/lib/utils';
 import { ConversationFilters, type ConversationFilterValues } from './conversation-filters';
 import { ConversationItem } from './conversation-item';
@@ -46,18 +47,20 @@ function ConversationListSkeleton() {
 }
 
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
+  const t = useTranslations('conversations');
+
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)]">
         <MessageSquare className="h-7 w-7 text-[var(--color-text-tertiary)]" />
       </div>
       <h3 className="mt-4 text-sm font-medium text-[var(--color-text-primary)]">
-        {hasFilters ? 'No matching conversations' : 'No conversations yet'}
+        {hasFilters ? t('noMatchingConversations') : t('noConversations')}
       </h3>
       <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
         {hasFilters
-          ? 'Try adjusting your filters to find what you are looking for.'
-          : 'Conversations will appear here when leads start messaging.'}
+          ? t('noMatchingDesc')
+          : t('noConversationsDesc')}
       </p>
     </div>
   );
@@ -72,6 +75,7 @@ export function ConversationList({
   onSelectConversation,
   className,
 }: ConversationListProps) {
+  const t = useTranslations('conversations');
   const hasFilters = Boolean(filters.priority || filters.tag || filters.search);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -96,7 +100,7 @@ export function ConversationList({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
-              Conversations
+              {t('title')}
             </h2>
             {!isLoading && (
               <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] px-1.5 text-[10px] font-medium text-[var(--color-text-secondary)]">

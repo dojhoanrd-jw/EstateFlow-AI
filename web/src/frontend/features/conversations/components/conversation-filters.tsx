@@ -2,8 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Select } from '@/frontend/components/ui/select';
 import { cn } from '@/frontend/lib/utils';
+import { useLocale } from '@/frontend/i18n/locale-context';
+import { getTagLabel } from '@/frontend/i18n/tag-labels';
 import type { ConversationWithLead, ConversationPriority } from '@/shared/types';
 
 export interface ConversationFilterValues {
@@ -19,20 +22,22 @@ interface ConversationFiltersProps {
   className?: string;
 }
 
-const priorityOptions = [
-  { value: '', label: 'All priorities' },
-  { value: 'high', label: 'High priority' },
-  { value: 'medium', label: 'Medium priority' },
-  { value: 'low', label: 'Low priority' },
-];
-
 export function ConversationFilters({
   conversations,
   value,
   onChange,
   className,
 }: ConversationFiltersProps) {
+  const t = useTranslations('conversations');
+  const { locale } = useLocale();
   const [searchInput, setSearchInput] = useState(value.search ?? '');
+
+  const priorityOptions = useMemo(() => [
+    { value: '', label: t('allPriorities') },
+    { value: 'high', label: t('highPriority') },
+    { value: 'medium', label: t('mediumPriority') },
+    { value: 'low', label: t('lowPriority') },
+  ], [t]);
 
   const tagOptions = useMemo(() => {
     const tagSet = new Set<string>();
@@ -42,13 +47,13 @@ export function ConversationFilters({
 
     const sorted = Array.from(tagSet).sort();
     return [
-      { value: '', label: 'All tags' },
+      { value: '', label: t('allTags') },
       ...sorted.map((tag) => ({
         value: tag,
-        label: tag.charAt(0).toUpperCase() + tag.slice(1),
+        label: getTagLabel(tag, locale),
       })),
     ];
-  }, [conversations]);
+  }, [conversations, t, locale]);
 
   const handlePriorityChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -113,8 +118,8 @@ export function ConversationFilters({
         />
         <input
           type="text"
-          aria-label="Search conversations"
-          placeholder="Search conversations..."
+          aria-label={t('searchPlaceholder')}
+          placeholder={t('searchPlaceholder')}
           value={searchInput}
           onChange={handleSearchChange}
           onKeyDown={handleSearchKeyDown}

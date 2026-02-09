@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/frontend/components/ui/button';
 import { cn } from '@/frontend/lib/utils';
 
@@ -16,6 +17,7 @@ export function MessageComposer({
   disabled = false,
   className,
 }: MessageComposerProps) {
+  const t = useTranslations('conversations');
   const [content, setContent] = useState('');
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -84,11 +86,11 @@ export function MessageComposer({
       >
         <textarea
           ref={textareaRef}
-          aria-label="Type a message"
+          aria-label={t('typeMessage')}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={disabled ? 'Select a conversation to start chatting' : 'Type a message...'}
+          placeholder={disabled ? t('selectToChat') : t('typeMessage')}
           disabled={disabled || isSending}
           rows={1}
           className={cn(
@@ -108,14 +110,14 @@ export function MessageComposer({
           disabled={!canSend}
           loading={isSending}
           className="shrink-0 rounded-lg"
-          aria-label="Send message"
+          aria-label={t('sendHint')}
         >
           <Send size={14} />
         </Button>
       </div>
 
       <p className="mt-1.5 text-center text-[10px] text-[var(--color-text-tertiary)]">
-        Press Enter to send, Shift+Enter for new line
+        {t('sendHint')}
       </p>
     </div>
   );

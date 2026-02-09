@@ -1,4 +1,7 @@
+'use client';
+
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/frontend/lib/utils';
 import { Card, CardHeader, CardTitle, CardBody } from '@/frontend/components/ui/card';
 import { Avatar } from '@/frontend/components/ui/avatar';
@@ -21,12 +24,6 @@ function getRateColor(rate: number): string {
   return 'text-red-600 dark:text-red-400';
 }
 
-function getRateBgColor(rate: number): string {
-  if (rate >= 90) return 'bg-emerald-50 dark:bg-emerald-900/20';
-  if (rate >= 70) return 'bg-amber-50 dark:bg-amber-900/20';
-  return 'bg-red-50 dark:bg-red-900/20';
-}
-
 function getResponseRate(count: number, unreplied: number): number {
   return count > 0 ? Math.round(((count - unreplied) / count) * 100) : 100;
 }
@@ -38,6 +35,8 @@ function getRateBarColor(rate: number): string {
 }
 
 export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
+  const t = useTranslations('dashboard');
+
   const sortedAgents = useMemo(
     () => [...agents].sort((a, b) => b.unreplied - a.unreplied),
     [agents],
@@ -46,9 +45,9 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Agent Performance</CardTitle>
+        <CardTitle>{t('agentPerformance')}</CardTitle>
         <span className="text-xs font-medium text-[var(--color-text-tertiary)]">
-          {agents.length} agents
+          {t('agentCount', { count: agents.length })}
         </span>
       </CardHeader>
 
@@ -57,16 +56,16 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
           <thead>
             <tr className="border-b border-[var(--color-border-subtle)]">
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                Agent
+                {t('thAgent')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                Total
+                {t('thTotal')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                Unreplied
+                {t('thUnreplied')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                Response Rate
+                {t('thResponseRate')}
               </th>
             </tr>
           </thead>
@@ -87,13 +86,11 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                       </span>
                     </div>
                   </td>
-
                   <td className="px-6 py-3.5 text-right">
                     <span className="text-sm font-semibold text-[var(--color-text-primary)] tabular-nums">
                       {agent.count}
                     </span>
                   </td>
-
                   <td className="px-6 py-3.5 text-right">
                     <span
                       className={cn(
@@ -106,7 +103,6 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                       {agent.unreplied}
                     </span>
                   </td>
-
                   <td className="px-6 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <div className="hidden lg:block h-1.5 w-16 overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
@@ -138,7 +134,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                   colSpan={4}
                   className="px-6 py-8 text-center text-sm text-[var(--color-text-tertiary)]"
                 >
-                  No agent data available
+                  {t('noAgentData')}
                 </td>
               </tr>
             )}
@@ -165,7 +161,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                    Total
+                    {t('thTotal')}
                   </p>
                   <p className="text-lg font-bold text-[var(--color-text-primary)] tabular-nums">
                     {agent.count}
@@ -173,7 +169,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                 </div>
                 <div>
                   <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                    Unreplied
+                    {t('thUnreplied')}
                   </p>
                   <p
                     className={cn(
@@ -188,7 +184,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
                 </div>
                 <div>
                   <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                    Rate
+                    {t('thRate')}
                   </p>
                   <p className={cn('text-lg font-bold tabular-nums', getRateColor(responseRate))}>
                     {responseRate}%
@@ -211,7 +207,7 @@ export function AgentPerformance({ agents, className }: AgentPerformanceProps) {
 
         {sortedAgents.length === 0 && (
           <p className="py-8 text-center text-sm text-[var(--color-text-tertiary)]">
-            No agent data available
+            {t('noAgentData')}
           </p>
         )}
       </CardBody>

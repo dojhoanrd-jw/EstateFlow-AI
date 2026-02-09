@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Building2, AlertCircle, ArrowRight } from 'lucide-react';
 import { loginSchema, type LoginInput } from '@/shared/validations/schemas';
@@ -15,6 +16,7 @@ const loginInputClass = 'h-[48px] !rounded-xl !text-[15px] bg-[var(--color-bg-se
 
 export function LoginForm() {
   const router = useRouter();
+  const t = useTranslations('login');
   const [serverError, setServerError] = useState<string | null>(null);
   const failCountRef = useRef(0);
   const lockedUntilRef = useRef(0);
@@ -36,7 +38,7 @@ export function LoginForm() {
 
     if (Date.now() < lockedUntilRef.current) {
       const secondsLeft = Math.ceil((lockedUntilRef.current - Date.now()) / 1000);
-      setServerError(`Too many attempts. Please wait ${secondsLeft}s.`);
+      setServerError(t('errorTooManyWait', { seconds: secondsLeft }));
       return;
     }
 
@@ -52,9 +54,9 @@ export function LoginForm() {
         if (failCountRef.current >= 5) {
           lockedUntilRef.current = Date.now() + 30_000;
           failCountRef.current = 0;
-          setServerError('Too many failed attempts. Please wait 30 seconds.');
+          setServerError(t('errorTooMany'));
         } else {
-          setServerError('Invalid email or password. Please try again.');
+          setServerError(t('errorInvalid'));
         }
         return;
       }
@@ -63,27 +65,29 @@ export function LoginForm() {
       router.push(APP_ROUTES.dashboard);
       router.refresh();
     } catch {
-      setServerError('Something went wrong. Please try again later.');
+      setServerError(t('errorGeneric'));
     }
   };
 
   return (
     <>
-      <div className="mb-6 flex items-center gap-2.5 lg:hidden">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600/10">
-          <Building2 className="text-teal-600" size={22} />
+      <div className="mb-6 flex items-center lg:hidden">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600/10">
+            <Building2 className="text-teal-600" size={22} />
+          </div>
+          <span className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
+            Estate<span className="text-teal-600">Flow</span>
+          </span>
         </div>
-        <span className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
-          Estate<span className="text-teal-600">Flow</span>
-        </span>
       </div>
 
       <div className="mb-10">
         <h1 className="text-[28px] font-bold tracking-tight text-[var(--color-text-primary)] leading-tight">
-          Welcome back
+          {t('title')}
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
-          Enter your credentials to access your dashboard.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -98,8 +102,8 @@ export function LoginForm() {
         <Input
           id="email"
           type="email"
-          label="Email address"
-          placeholder="you@company.com"
+          label={t('emailLabel')}
+          placeholder={t('emailPlaceholder')}
           autoComplete="email"
           error={errors.email?.message}
           className={loginInputClass}
@@ -109,8 +113,8 @@ export function LoginForm() {
         <Input
           id="password"
           type="password"
-          label="Password"
-          placeholder="Enter your password"
+          label={t('passwordLabel')}
+          placeholder={t('passwordPlaceholder')}
           autoComplete="current-password"
           error={errors.password?.message}
           className={loginInputClass}
@@ -125,10 +129,10 @@ export function LoginForm() {
             className="w-full !h-[48px] !rounded-xl !text-[15px] !font-semibold"
           >
             {isSubmitting ? (
-              'Signing in...'
+              t('submitting')
             ) : (
               <>
-                Sign in
+                {t('submit')}
                 <ArrowRight size={16} className="ml-1.5" />
               </>
             )}
@@ -137,7 +141,7 @@ export function LoginForm() {
       </form>
 
       <p className="mt-12 text-center text-xs text-[var(--color-text-tertiary)]">
-        AI-powered real estate CRM platform
+        {t('footer')}
       </p>
     </>
   );

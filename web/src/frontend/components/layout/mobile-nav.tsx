@@ -3,11 +3,13 @@
 import { useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { X, Building2 } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 import { NavIcon } from '@/frontend/components/layout/nav-icon';
 import { NAV_ITEMS } from '@/frontend/config/navigation';
 import { UserSection } from '@/frontend/components/layout/user-section';
+import { LanguageSwitcher } from '@/frontend/components/ui/language-switcher';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface MobileNavProps {
 export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations('nav');
 
   useEffect(() => {
     onClose();
@@ -112,7 +115,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            Menu
+            {t('menu')}
           </p>
           {NAV_ITEMS.map((item) => {
             const isActive =
@@ -139,12 +142,13 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                       : 'text-slate-500 group-hover:text-slate-300',
                   )}
                 />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}
         </nav>
 
+        <LanguageSwitcher variant="sidebar" />
         <UserSection variant="mobile" />
       </div>
     </>

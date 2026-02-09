@@ -1,19 +1,19 @@
 import { APP_ROUTES } from '@/shared/routes/app.routes';
 
 export interface NavItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: 'LayoutDashboard' | 'MessageSquare';
 }
 
 export const NAV_ITEMS: NavItem[] = [
   {
-    label: 'Dashboard',
+    labelKey: 'dashboard',
     href: APP_ROUTES.dashboard,
     icon: 'LayoutDashboard',
   },
   {
-    label: 'Conversations',
+    labelKey: 'conversations',
     href: APP_ROUTES.conversations,
     icon: 'MessageSquare',
   },

@@ -1,5 +1,10 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Tags } from 'lucide-react';
 import { cn, getTagColor } from '@/frontend/lib/utils';
+import { useLocale } from '@/frontend/i18n/locale-context';
+import { getTagLabel } from '@/frontend/i18n/tag-labels';
 import { Card, CardHeader, CardTitle, CardBody } from '@/frontend/components/ui/card';
 
 interface TagData {
@@ -13,14 +18,16 @@ interface TopTagsProps {
 }
 
 export function TopTags({ tags, className }: TopTagsProps) {
-  const maxCount = tags.length > 0 ? Math.max(...tags.map((t) => t.count)) : 1;
+  const t = useTranslations('dashboard');
+  const { locale } = useLocale();
+  const maxCount = tags.length > 0 ? Math.max(...tags.map((item) => item.count)) : 1;
 
   return (
     <Card className={className}>
       <CardHeader>
         <div className="flex items-center gap-2">
           <Tags size={16} className="text-[var(--color-text-tertiary)]" />
-          <CardTitle>Top AI Tags</CardTitle>
+          <CardTitle>{t('topTags')}</CardTitle>
         </div>
       </CardHeader>
 
@@ -43,7 +50,7 @@ export function TopTags({ tags, className }: TopTagsProps) {
                       colorClasses,
                     )}
                   >
-                    {item.tag}
+                    {getTagLabel(item.tag, locale)}
                   </span>
                 </div>
                 <span className="text-xs font-semibold text-[var(--color-text-secondary)] tabular-nums">
@@ -65,7 +72,7 @@ export function TopTags({ tags, className }: TopTagsProps) {
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Tags size={24} className="text-[var(--color-text-tertiary)] mb-2" />
             <p className="text-sm text-[var(--color-text-tertiary)]">
-              No tags available yet
+              {t('noTags')}
             </p>
           </div>
         )}
@@ -82,7 +89,7 @@ export function TopTags({ tags, className }: TopTagsProps) {
                     getTagColor(item.tag),
                   )}
                 >
-                  {item.tag}
+                  {getTagLabel(item.tag, locale)}
                   <span className="opacity-60">{item.count}</span>
                 </span>
               ))}

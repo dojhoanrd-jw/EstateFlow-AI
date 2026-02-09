@@ -1,10 +1,13 @@
 'use client';
 
 import { memo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Avatar } from '@/frontend/components/ui/avatar';
 import { Badge } from '@/frontend/components/ui/badge';
 import { cn, formatDate } from '@/frontend/lib/utils';
 import { useTimestamp } from '@/frontend/hooks/use-timestamp';
+import { useLocale } from '@/frontend/i18n/locale-context';
+import { getTagLabel } from '@/frontend/i18n/tag-labels';
 import type { ConversationWithLead } from '@/shared/types';
 
 interface ConversationItemProps {
@@ -13,12 +16,20 @@ interface ConversationItemProps {
   onClick: (id: string) => void;
 }
 
+const PRIORITY_KEYS: Record<string, string> = {
+  high: 'priorityHigh',
+  medium: 'priorityMedium',
+  low: 'priorityLow',
+};
+
 export const ConversationItem = memo(function ConversationItem({
   conversation,
   isSelected,
   onClick,
 }: ConversationItemProps) {
   useTimestamp();
+  const t = useTranslations('common');
+  const { locale } = useLocale();
 
   const {
     id,
@@ -56,7 +67,7 @@ export const ConversationItem = memo(function ConversationItem({
             <span
               className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-[var(--color-accent-600)] ring-2 ring-[var(--color-bg-elevated)]"
               role="status"
-              aria-label={`${unread_count} unread message${unread_count !== 1 ? 's' : ''}`}
+              aria-label={t('unreadCount', { count: unread_count })}
             />
           )}
         </div>
@@ -75,7 +86,7 @@ export const ConversationItem = memo(function ConversationItem({
             </span>
             {last_message_at && (
               <span className="shrink-0 text-[10px] text-[var(--color-text-tertiary)]">
-                {formatDate(last_message_at)}
+                {formatDate(last_message_at, t, locale)}
               </span>
             )}
           </div>
@@ -88,17 +99,17 @@ export const ConversationItem = memo(function ConversationItem({
                 : 'text-[var(--color-text-tertiary)]',
             )}
           >
-            {last_message ?? 'No messages yet'}
+            {last_message ?? t('noMessagesYet')}
           </p>
 
           <div className="mt-1.5 flex items-center gap-1.5">
             <Badge variant="priority" level={ai_priority} className="text-[10px] px-1.5 py-0">
-              {ai_priority}
+              {t(PRIORITY_KEYS[ai_priority] ?? 'priorityLow')}
             </Badge>
 
             {displayTags.map((tag) => (
               <Badge key={tag} variant="tag" tag={tag} className="text-[10px] px-1.5 py-0">
-                {tag}
+                {getTagLabel(tag, locale)}
               </Badge>
             ))}
 

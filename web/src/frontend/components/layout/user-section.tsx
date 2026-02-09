@@ -1,6 +1,7 @@
 'use client';
 
 import { signOut } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { LogOut } from 'lucide-react';
 import { cn } from '@/frontend/lib/utils';
 import { Avatar } from '@/frontend/components/ui/avatar';
@@ -12,10 +13,13 @@ interface UserSectionProps {
 
 export function UserSection({ variant = 'sidebar' }: UserSectionProps) {
   const { user } = useCurrentUser();
+  const t = useTranslations('user');
 
-  const userName = user?.name ?? 'User';
+  const userName = user?.name ?? t('defaultName');
   const userRole = user?.role ?? 'agent';
   const userAvatar = user?.image ?? null;
+
+  const roleLabel = userRole === 'admin' ? t('roleAdmin') : t('roleAgent');
 
   const roleBadge = (
     <span
@@ -26,7 +30,7 @@ export function UserSection({ variant = 'sidebar' }: UserSectionProps) {
           : 'bg-teal-500/15 text-teal-400',
       )}
     >
-      {userRole}
+      {roleLabel}
     </span>
   );
 
@@ -45,7 +49,7 @@ export function UserSection({ variant = 'sidebar' }: UserSectionProps) {
           className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-red-400"
         >
           <LogOut size={16} />
-          Sign out
+          {t('signOut')}
         </button>
       </div>
     );
@@ -62,8 +66,8 @@ export function UserSection({ variant = 'sidebar' }: UserSectionProps) {
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors duration-[var(--transition-fast)] hover:bg-slate-800 hover:text-red-400"
-          aria-label="Sign out"
-          title="Sign out"
+          aria-label={t('signOut')}
+          title={t('signOut')}
         >
           <LogOut size={16} />
         </button>

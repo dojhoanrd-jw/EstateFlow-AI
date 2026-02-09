@@ -7,6 +7,7 @@ import {
   Building2,
   X,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card, CardBody } from '@/frontend/components/ui/card';
 import { cn } from '@/frontend/lib/utils';
 import { AISummary } from './ai-summary';
@@ -49,16 +50,18 @@ function InfoRow({
 }
 
 function EmptyPanel() {
+  const t = useTranslations('conversations');
+
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)]">
         <User className="h-7 w-7 text-[var(--color-text-tertiary)]" />
       </div>
       <h3 className="mt-4 text-sm font-medium text-[var(--color-text-primary)]">
-        Lead details
+        {t('leadDetails')}
       </h3>
       <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-        Select a conversation to view lead information.
+        {t('leadDetailsDesc')}
       </p>
     </div>
   );
@@ -69,6 +72,8 @@ export function LeadInfoPanel({
   onClose,
   className,
 }: LeadInfoPanelProps) {
+  const t = useTranslations('conversations');
+
   if (!conversation) {
     return (
       <div
@@ -105,14 +110,14 @@ export function LeadInfoPanel({
     >
       <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-default)] px-4 py-3">
         <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
-          Lead Info
+          {t('leadInfo')}
         </h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
-            aria-label="Close panel"
+            aria-label={t('hideInfo')}
           >
             <X size={16} />
           </button>
@@ -123,23 +128,23 @@ export function LeadInfoPanel({
         <Card>
           <CardBody className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-              Contact Information
+              {t('contactInfo')}
             </h3>
-            <InfoRow icon={User} label="Name" value={lead_name} />
-            <InfoRow icon={Mail} label="Email" value={lead_email} />
-            <InfoRow icon={Phone} label="Phone" value={lead_phone} />
+            <InfoRow icon={User} label={t('name')} value={lead_name} />
+            <InfoRow icon={Mail} label={t('email')} value={lead_email} />
+            <InfoRow icon={Phone} label={t('phone')} value={lead_phone} />
           </CardBody>
         </Card>
 
         <Card>
           <CardBody className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-              Project Interest
+              {t('projectInterest')}
             </h3>
-            <InfoRow icon={Building2} label="Project" value={lead_project} />
+            <InfoRow icon={Building2} label={t('project')} value={lead_project} />
             {!lead_project && (
               <p className="text-xs text-[var(--color-text-tertiary)] italic">
-                No project interest specified yet.
+                {t('noProject')}
               </p>
             )}
           </CardBody>
@@ -147,7 +152,7 @@ export function LeadInfoPanel({
 
         <div className="space-y-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] px-1">
-            AI Analysis
+            {t('aiAnalysis')}
           </h3>
 
           <AIPriorityBadge priority={ai_priority} />
