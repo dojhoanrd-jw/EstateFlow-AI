@@ -32,7 +32,8 @@ export function validateOrigin(req: NextRequest): void {
   if (!origin) return;
 
   const host = req.headers.get('host');
-  const expected = host ? new URL(`https://${host}`).origin : null;
+  const proto = req.headers.get('x-forwarded-proto') ?? new URL(req.url).protocol.replace(':', '');
+  const expected = host ? new URL(`${proto}://${host}`).origin : null;
 
   if (expected && origin !== expected) {
     throw ApiError.forbidden('Cross-origin request rejected');
