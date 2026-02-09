@@ -2,6 +2,10 @@
 
 AI-powered real estate CRM platform for sales agents. Real-time conversations, AI-generated summaries, lead prioritization, and an analytics dashboard.
 
+**Live Demo:** https://estateflow-web-5tjias2ehq-uc.a.run.app/
+
+> [README en Espanol](./README.es.md)
+
 ## Architecture Overview
 
 ```
@@ -70,7 +74,7 @@ OPENAI_API_KEY=sk-your-key-here
 docker compose up --build
 ```
 
-This starts all 4 services. PostgreSQL auto-runs migrations and seeds on first boot.
+This starts all 4 services. The web container automatically runs `node-pg-migrate` on startup to apply pending migrations and seed data.
 
 ### 3. Open the app
 
@@ -125,6 +129,7 @@ EstateFlow-AI/
 │   │   │   ├── validations/      #   Zod schemas
 │   │   │   └── routes/           #   Route constants
 │   │   └── middleware.ts         # Auth guard + locale detection
+│   ├── migrations/               # node-pg-migrate SQL migrations (up/down)
 │   ├── server.ts                 # Custom HTTP server + Socket.IO
 │   └── Dockerfile
 ├── ai-service/                   # Python AI microservice
@@ -232,6 +237,18 @@ Project documents are chunked (600 chars, 100 overlap), embedded with `text-embe
 
 Failed AI calls retry with exponential backoff (2s, 4s, 8s — max 3 attempts). Non-retryable errors (4xx) abort immediately. The message API never blocks on AI — analysis is fire-and-forget.
 
+## Database Migrations
+
+Schema changes are managed with [node-pg-migrate](https://github.com/salsita/node-pg-migrate). Each migration file contains both **Up** and **Down** sections for full rollback support. The `pgmigrations` table tracks which migrations have been applied.
+
+```bash
+npm run db:migrate          # Apply all pending migrations
+npm run db:migrate:down     # Rollback the last migration
+npm run db:migrate:create   # Scaffold a new migration file
+```
+
+Migrations run automatically on container startup (both production Dockerfile and dev docker-compose). On subsequent boots, only unapplied migrations execute.
+
 ## Database Schema
 
 ```sql
@@ -251,7 +268,7 @@ Key indexes: GIN on `ai_tags[]`, B-tree on `ai_priority`, partial index on unrea
 | **Cookie-based i18n** (no /en/, /es/ prefixes) | Avoids restructuring entire App Router; instant client-side switching | Requires locale cookie management; not SEO-optimized for multilingual content |
 | **Custom server.ts** instead of Next.js built-in | Socket.IO needs access to the HTTP server instance | Loses some Next.js optimizations (standalone mode, automatic port binding) |
 | **GPT-4o-mini** over GPT-4o | 10x cheaper, fast enough for summaries/tags | Slightly lower quality on nuanced analysis |
-| **Direct SQL (pg)** instead of ORM | Full control over queries, no abstraction overhead | Manual query building, no migration framework |
+| **Direct SQL (pg) + node-pg-migrate** | Full control over queries, no ORM overhead; tracked migrations with rollback | Manual query building; requires discipline in migration authoring |
 | **Debounced AI (2s)** | Prevents excessive API calls during rapid conversation | Analysis lags slightly behind the last message |
 | **Separate Python AI service** | LangChain ecosystem is Python-first; independent scaling | Extra container, network hop, deployment complexity |
 | **Redis adapter optional** | Works in single-instance mode without Redis | Must enable Redis for multi-instance deploys |

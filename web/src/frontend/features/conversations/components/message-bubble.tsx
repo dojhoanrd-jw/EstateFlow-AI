@@ -46,7 +46,7 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
         </p>
 
         {content_type === 'image' ? (
-          /^https?:\/\//i.test(content) ? (
+          /^(https?:\/\/|data:image\/)/i.test(content) ? (
             <img
               src={content}
               alt=""

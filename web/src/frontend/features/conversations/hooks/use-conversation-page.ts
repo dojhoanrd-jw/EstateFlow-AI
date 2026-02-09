@@ -63,8 +63,8 @@ export function useConversationPage() {
   }, []);
 
   const handleSendMessage = useCallback(
-    async (content: string) => {
-      await sendMessage(content);
+    async (content: string, contentType: 'text' | 'image' = 'text') => {
+      await sendMessage(content, contentType);
       if (selectedConversation) {
         showTyping(selectedConversation.lead_name);
       }

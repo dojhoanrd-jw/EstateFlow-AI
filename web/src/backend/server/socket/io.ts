@@ -11,5 +11,7 @@ export function broadcastToConversation(
 ): void {
   const io = getIO();
   if (!io) return;
-  io.to(`conversation:${conversationId}`).emit(event, data);
+  const room = `conversation:${conversationId}`;
+  io.to(room).emit(event, data);
+  io.of('/public-chat').to(room).emit(event, data);
 }

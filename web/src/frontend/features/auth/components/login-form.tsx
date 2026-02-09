@@ -6,7 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Building2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Building2, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { loginSchema, type LoginInput } from '@/shared/validations/schemas';
 import { APP_ROUTES } from '@/shared/routes/app.routes';
 import { Button } from '@/frontend/components/ui/button';
@@ -18,6 +18,7 @@ export function LoginForm() {
   const router = useRouter();
   const t = useTranslations('login');
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const failCountRef = useRef(0);
   const lockedUntilRef = useRef(0);
 
@@ -110,16 +111,27 @@ export function LoginForm() {
           {...register('email')}
         />
 
-        <Input
-          id="password"
-          type="password"
-          label={t('passwordLabel')}
-          placeholder={t('passwordPlaceholder')}
-          autoComplete="current-password"
-          error={errors.password?.message}
-          className={loginInputClass}
-          {...register('password')}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            label={t('passwordLabel')}
+            placeholder={t('passwordPlaceholder')}
+            autoComplete="current-password"
+            error={errors.password?.message}
+            className={`${loginInputClass} pr-12`}
+            {...register('password')}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-[38px] rounded-md p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
+            aria-label={t('togglePassword')}
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
         <div className="pt-2">
           <Button

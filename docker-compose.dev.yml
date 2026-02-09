@@ -11,7 +11,6 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./web/src/backend/server/db/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 5s
@@ -34,7 +33,7 @@ services:
     image: node:20-alpine
     container_name: estateflow-web-dev
     working_dir: /app
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "npm install && npm run db:migrate && npm run dev"
     ports:
       - "3000:3000"
     volumes:

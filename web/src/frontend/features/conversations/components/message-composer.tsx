@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, ImagePlus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/frontend/components/ui/button';
 import { cn } from '@/frontend/lib/utils';
 
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
 interface MessageComposerProps {
-  onSend: (content: string) => Promise<void>;
+  onSend: (content: string, contentType?: 'text' | 'image') => Promise<void>;
   onTyping?: () => void;
   disabled?: boolean;
   className?: string;
@@ -22,7 +25,9 @@ export function MessageComposer({
   const t = useTranslations('conversations');
   const [content, setContent] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const adjustHeight = useCallback(() => {
     const textarea = textareaRef.current;
@@ -38,12 +43,26 @@ export function MessageComposer({
   }, [content, adjustHeight]);
 
   const handleSubmit = useCallback(async () => {
+    if (isSending || disabled) return;
+
+    if (imagePreview) {
+      setIsSending(true);
+      try {
+        await onSend(imagePreview, 'image');
+        setImagePreview(null);
+      } finally {
+        setIsSending(false);
+      }
+      textareaRef.current?.focus();
+      return;
+    }
+
     const trimmed = content.trim();
-    if (!trimmed || isSending || disabled) return;
+    if (!trimmed) return;
 
     setIsSending(true);
     try {
-      await onSend(trimmed);
+      await onSend(trimmed, 'text');
       setContent('');
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -53,7 +72,7 @@ export function MessageComposer({
     }
 
     textareaRef.current?.focus();
-  }, [content, isSending, disabled, onSend]);
+  }, [content, imagePreview, isSending, disabled, onSend]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -65,7 +84,29 @@ export function MessageComposer({
     [handleSubmit],
   );
 
-  const canSend = content.trim().length > 0 && !isSending && !disabled;
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_TYPES.includes(file.type)) return;
+    if (file.size > MAX_IMAGE_SIZE) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setImagePreview(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const clearImage = useCallback(() => {
+    setImagePreview(null);
+  }, []);
+
+  const canSend = (content.trim().length > 0 || !!imagePreview) && !isSending && !disabled;
 
   return (
     <div
@@ -75,6 +116,24 @@ export function MessageComposer({
         className,
       )}
     >
+      {imagePreview && (
+        <div className="mb-2 inline-flex items-start gap-2 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] p-2">
+          <img
+            src={imagePreview}
+            alt=""
+            className="h-20 w-20 rounded-md object-cover"
+          />
+          <button
+            type="button"
+            onClick={clearImage}
+            className="rounded-full p-0.5 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
+            aria-label={t('removeImage')}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <div
         className={cn(
           'flex items-end gap-2 rounded-xl border',
@@ -86,6 +145,29 @@ export function MessageComposer({
           'px-3 py-2',
         )}
       >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          onChange={handleImageSelect}
+          className="hidden"
+          aria-hidden="true"
+        />
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isSending}
+          className={cn(
+            'shrink-0 rounded-md p-1.5 transition-colors',
+            'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+          )}
+          aria-label={t('attachImage')}
+        >
+          <ImagePlus size={18} />
+        </button>
+
         <textarea
           ref={textareaRef}
           aria-label={t('typeMessage')}
