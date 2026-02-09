@@ -175,7 +175,7 @@ export function ChatWindow({ chatToken, conversationId, leadName, initialMessage
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-1" ref={scrollContainerRef}>
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3" ref={scrollContainerRef}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-12">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 ring-1 ring-slate-700">
@@ -185,16 +185,26 @@ export function ChatWindow({ chatToken, conversationId, leadName, initialMessage
           </div>
         )}
 
-        {messages.map((msg) => (
-          <ChatMessage
-            key={msg.id}
-            senderType={msg.sender_type}
-            senderName={msg.sender_name}
-            content={msg.content}
-            contentType={msg.content_type}
-            createdAt={msg.created_at}
-          />
-        ))}
+        {messages.map((msg, i) => {
+          const prev = messages[i - 1];
+          const next = messages[i + 1];
+          const isFirstInGroup = !prev || prev.sender_type !== msg.sender_type;
+          const isLastInGroup = !next || next.sender_type !== msg.sender_type;
+
+          return (
+            <ChatMessage
+              key={msg.id}
+              senderType={msg.sender_type}
+              senderName={msg.sender_name}
+              content={msg.content}
+              contentType={msg.content_type}
+              createdAt={msg.created_at}
+              isFirstInGroup={isFirstInGroup}
+              isLastInGroup={isLastInGroup}
+              isFirstMessage={i === 0}
+            />
+          );
+        })}
 
         {!hasAgentReply && messages.length > 0 && !typingName && (
           <div className="flex justify-center py-4">

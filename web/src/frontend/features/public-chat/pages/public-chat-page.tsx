@@ -15,15 +15,11 @@ export function PublicChatPage() {
   const [session, setSession] = useState<ChatSession | null>(null);
 
   if (!session) {
-    return (
-      <div className="w-full max-w-md">
-        <StartChatForm onStarted={setSession} />
-      </div>
-    );
+    return <StartChatForm onStarted={setSession} />;
   }
 
   return (
-    <div className="w-full max-w-lg h-[calc(100dvh-3rem)] max-h-[700px]">
+    <div className="w-full h-[calc(100dvh-3rem)] max-h-[700px]">
       <ChatWindow
         chatToken={session.chat_token}
         conversationId={session.conversation_id}

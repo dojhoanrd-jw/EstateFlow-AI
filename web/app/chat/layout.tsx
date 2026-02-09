@@ -6,7 +6,7 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="dark flex min-h-[100dvh] flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden px-4 py-6">
+    <div className="dark grid h-[100dvh] place-items-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden px-4 py-6">
       <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-teal-500/5 blur-3xl" />
       <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-teal-500/5 blur-3xl" />
 
@@ -22,7 +22,7 @@ export default function ChatLayout({
         <LanguageSwitcher variant="login" />
       </div>
 
-      <div className="relative z-10 w-full flex items-center justify-center flex-1">
+      <div className="relative z-10 w-full max-w-lg">
         {children}
       </div>
     </div>
