@@ -37,6 +37,7 @@ export function ConversationsPage() {
     handleShowInfoMobile,
     handleCloseInfoMobile,
     handleSendMessage,
+    handleTyping,
     handleFilterChange,
   } = useConversationPage();
 
@@ -153,6 +154,7 @@ export function ConversationsPage() {
 
         <MessageComposer
           onSend={handleSendMessage}
+          onTyping={handleTyping}
           disabled={!selectedConversationId}
         />
       </div>

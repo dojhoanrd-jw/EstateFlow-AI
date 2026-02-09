@@ -20,6 +20,7 @@ export function useSocket(conversationId: string | null) {
   const prevRoomRef = useRef<string | null>(null);
   const onMessageRef = useRef<((msg: MessageWithSender) => void) | null>(null);
   const onAiUpdateRef = useRef<(() => void) | null>(null);
+  const onTypingEventRef = useRef<((data: { userName: string; isTyping: boolean }) => void) | null>(null);
 
   useEffect(() => {
     if (!conversationId) {
@@ -66,6 +67,11 @@ export function useSocket(conversationId: string | null) {
     };
     socket.on('ai_update', handleAiUpdate);
 
+    const handleTyping = (data: { userName: string; isTyping: boolean }) => {
+      if (onTypingEventRef.current) onTypingEventRef.current(data);
+    };
+    socket.on('typing', handleTyping);
+
     return () => {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
@@ -73,6 +79,7 @@ export function useSocket(conversationId: string | null) {
       socket.off('connect_error', handleConnectError);
       socket.off('new_message', handleNewMessage);
       socket.off('ai_update', handleAiUpdate);
+      socket.off('typing', handleTyping);
     };
   }, [conversationId]);
 
@@ -82,6 +89,10 @@ export function useSocket(conversationId: string | null) {
 
   const onAiUpdate = useCallback((handler: () => void) => {
     onAiUpdateRef.current = handler;
+  }, []);
+
+  const onTypingEvent = useCallback((handler: (data: { userName: string; isTyping: boolean }) => void) => {
+    onTypingEventRef.current = handler;
   }, []);
 
   const sendTyping = useCallback(
@@ -97,37 +108,52 @@ export function useSocket(conversationId: string | null) {
     [conversationId],
   );
 
-  return { isConnected, onMessage, onAiUpdate, sendTyping };
+  return { isConnected, onMessage, onAiUpdate, onTypingEvent, sendTyping };
 }
 
 export function useTypingIndicator(conversationId: string | null) {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   useEffect(() => {
     setTypingUsers([]);
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
+    timersRef.current.forEach((t) => clearTimeout(t));
+    timersRef.current.clear();
   }, [conversationId]);
 
-  const emitTyping = useCallback(
-    (leadName: string = 'Lead') => {
+  const showTyping = useCallback(
+    (userName: string) => {
       if (!conversationId) return;
 
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      const existing = timersRef.current.get(userName);
+      if (existing) clearTimeout(existing);
 
-      setTypingUsers([{ user_name: leadName, is_typing: true }]);
+      setTypingUsers((prev) => {
+        const without = prev.filter((u) => u.user_name !== userName);
+        return [...without, { user_name: userName, is_typing: true }];
+      });
 
-      timeoutRef.current = setTimeout(() => {
-        setTypingUsers([]);
-      }, 3000);
+      timersRef.current.set(
+        userName,
+        setTimeout(() => {
+          timersRef.current.delete(userName);
+          setTypingUsers((prev) => prev.filter((u) => u.user_name !== userName));
+        }, 3000),
+      );
     },
     [conversationId],
   );
 
+  const hideTyping = useCallback((userName: string) => {
+    const existing = timersRef.current.get(userName);
+    if (existing) clearTimeout(existing);
+    timersRef.current.delete(userName);
+    setTypingUsers((prev) => prev.filter((u) => u.user_name !== userName));
+  }, []);
+
   return {
     typingUsers: typingUsers.filter((u) => u.is_typing),
-    emitTyping,
+    showTyping,
+    hideTyping,
   };
 }

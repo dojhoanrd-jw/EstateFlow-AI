@@ -8,12 +8,14 @@ import { cn } from '@/frontend/lib/utils';
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>;
+  onTyping?: () => void;
   disabled?: boolean;
   className?: string;
 }
 
 export function MessageComposer({
   onSend,
+  onTyping,
   disabled = false,
   className,
 }: MessageComposerProps) {
@@ -88,7 +90,7 @@ export function MessageComposer({
           ref={textareaRef}
           aria-label={t('typeMessage')}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => { setContent(e.target.value); onTyping?.(); }}
           onKeyDown={handleKeyDown}
           placeholder={disabled ? t('selectToChat') : t('typeMessage')}
           disabled={disabled || isSending}

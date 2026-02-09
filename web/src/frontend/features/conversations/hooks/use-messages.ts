@@ -24,7 +24,7 @@ export function useMessages(
     },
   );
 
-  const { isConnected, onMessage, onAiUpdate } = useSocket(conversationId);
+  const { isConnected, onMessage, onAiUpdate, onTypingEvent, sendTyping } = useSocket(conversationId);
 
   useEffect(() => {
     onMessage((newMsg: MessageWithSender) => {
@@ -95,6 +95,8 @@ export function useMessages(
     error,
     isConnected,
     onAiUpdate,
+    onTypingEvent,
+    sendTyping,
     mutate,
     sendMessage,
   };
