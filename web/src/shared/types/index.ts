@@ -31,7 +31,8 @@ export type ConversationStatus = 'active' | 'archived';
 export interface Conversation {
   id: string;
   lead_id: string;
-  assigned_agent_id: string;
+  assigned_agent_id: string | null;
+  chat_token: string | null;
   status: ConversationStatus;
   ai_summary: string | null;
   ai_priority: ConversationPriority;

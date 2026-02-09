@@ -22,6 +22,7 @@ export const updateConversationSchema = z.object({
   ai_summary: z.string().transform(stripHtml).optional(),
   ai_priority: z.enum(['high', 'medium', 'low']).optional(),
   ai_tags: z.array(z.string().transform(stripHtml)).optional(),
+  assigned_agent_id: z.string().uuid().nullable().optional(),
 });
 
 export const conversationFiltersSchema = z.object({
@@ -29,6 +30,7 @@ export const conversationFiltersSchema = z.object({
   tag: z.string().transform(stripHtml).optional(),
   status: z.enum(['active', 'archived']).default('active'),
   search: z.string().transform(stripHtml).optional(),
+  assignment: z.enum(['mine', 'unassigned', 'all']).default('mine'),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
@@ -60,6 +62,19 @@ export const updateUserSchema = z.object({
   is_active: z.boolean().optional(),
 });
 
+export const startPublicChatSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(120).transform(stripHtml),
+  email: z.string().email().max(255).optional(),
+  phone: z.string().max(30).optional(),
+  message: z.string().min(1, 'Message cannot be empty').max(5000).transform(stripHtml),
+  project_interest: z.string().max(255).transform(stripHtml).optional(),
+});
+
+export const publicChatMessageSchema = z.object({
+  content: z.string().min(1, 'Message cannot be empty').max(5000).transform(stripHtml),
+  content_type: z.enum(['text', 'image']).default('text'),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateMessageInput = z.infer<typeof createMessageSchema>;
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
@@ -69,3 +84,5 @@ export type CreateLeadInput = z.infer<typeof createLeadSchema>;
 export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type StartPublicChatInput = z.infer<typeof startPublicChatSchema>;
+export type PublicChatMessageInput = z.infer<typeof publicChatMessageSchema>;
