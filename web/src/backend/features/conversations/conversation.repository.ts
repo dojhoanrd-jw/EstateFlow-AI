@@ -151,6 +151,7 @@ function buildListQuery(
           WHEN 'high'   THEN 1
           WHEN 'medium' THEN 2
           WHEN 'low'    THEN 3
+          ELSE 0
         END,
         c.last_message_at DESC NULLS LAST,
         c.created_at DESC

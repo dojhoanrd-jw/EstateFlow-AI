@@ -8,17 +8,25 @@ function getRedis(): Redis | null {
   const url = process.env.REDIS_URL;
   if (!url) return null;
 
+  let errorLogged = false;
   redis = new Redis(url, {
     maxRetriesPerRequest: 1,
     lazyConnect: true,
     enableOfflineQueue: false,
+    retryStrategy(times: number) {
+      if (times > 3) return null;
+      return Math.min(times * 200, 2000);
+    },
   });
 
   redis.on('error', (err) => {
-    console.error('[Redis] connection error:', err.message);
+    if (!errorLogged) { console.warn('[Redis rate-limit] unavailable:', err.message); errorLogged = true; }
   });
 
-  redis.connect().catch(() => {});
+  redis.connect().catch(() => {
+    redis?.disconnect();
+    redis = null;
+  });
   return redis;
 }
 

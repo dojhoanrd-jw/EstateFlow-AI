@@ -1,7 +1,7 @@
 import { messageRepository } from './message.repository';
 import { conversationRepository } from '@/backend/features/conversations/conversation.repository';
 import { ApiError } from '@/backend/server/lib/api-error';
-import { assertConversationAccess } from '@/backend/server/lib/assert-ownership';
+import { assertConversationAccess, assertConversationWriteAccess } from '@/backend/server/lib/assert-ownership';
 import { paginationMeta } from '@/shared/validations/common';
 import type { UserRole, MessageWithSender } from '@/shared/types';
 import type { CreateMessageInput } from '@/shared/validations/schemas';
@@ -10,6 +10,7 @@ async function verifyConversationAccess(
   conversationId: string,
   userId: string,
   role: UserRole,
+  mode: 'read' | 'write' = 'read',
 ) {
   const conversation = await conversationRepository.findById(conversationId);
 
@@ -17,7 +18,11 @@ async function verifyConversationAccess(
     throw ApiError.notFound('Conversation');
   }
 
-  assertConversationAccess(conversation, userId, role);
+  if (mode === 'write') {
+    assertConversationWriteAccess(conversation, userId, role);
+  } else {
+    assertConversationAccess(conversation, userId, role);
+  }
 
   return conversation;
 }
@@ -52,7 +57,7 @@ export const messageService = {
     role: UserRole,
     data: CreateMessageInput,
   ): Promise<MessageWithSender> {
-    await verifyConversationAccess(conversationId, userId, role);
+    await verifyConversationAccess(conversationId, userId, role, 'write');
 
     const senderType = 'agent' as const;
 

@@ -3,6 +3,7 @@ import { conversationRepository } from './conversation.repository';
 import { broadcastToConversation } from '@/backend/server/socket/io';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+const AI_SERVICE_API_KEY = process.env.AI_SERVICE_API_KEY || '';
 
 const MAX_RETRIES = 3;
 const RETRY_BASE_MS = 2_000;
@@ -90,9 +91,14 @@ async function triggerAIAnalysis(conversationId: string): Promise<void> {
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (AI_SERVICE_API_KEY) {
+          headers['x-api-key'] = AI_SERVICE_API_KEY;
+        }
+
         const response = await fetch(`${AI_SERVICE_URL}/v1/analyze`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: payload,
         });
 

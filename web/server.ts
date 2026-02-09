@@ -42,11 +42,26 @@ function createRedisAdapter(io: SocketIOServer): void {
   if (!redisUrl) return;
 
   try {
-    const pubClient = new Redis(redisUrl, { lazyConnect: true, enableOfflineQueue: false });
+    const redisOpts = {
+      lazyConnect: true,
+      enableOfflineQueue: false,
+      retryStrategy(times: number) {
+        if (times > 3) return null;          // stop after 3 attempts
+        return Math.min(times * 200, 2000);  // 200ms, 400ms, 600ms
+      },
+      maxRetriesPerRequest: 1,
+    };
+    const pubClient = new Redis(redisUrl, redisOpts);
     const subClient = pubClient.duplicate();
 
-    pubClient.on('error', (err) => console.error('[Redis adapter pub]', err.message));
-    subClient.on('error', (err) => console.error('[Redis adapter sub]', err.message));
+    let pubErrorLogged = false;
+    let subErrorLogged = false;
+    pubClient.on('error', (err) => {
+      if (!pubErrorLogged) { console.warn('[Redis adapter pub]', err.message); pubErrorLogged = true; }
+    });
+    subClient.on('error', (err) => {
+      if (!subErrorLogged) { console.warn('[Redis adapter sub]', err.message); subErrorLogged = true; }
+    });
 
     Promise.all([pubClient.connect(), subClient.connect()])
       .then(() => {
@@ -55,6 +70,8 @@ function createRedisAdapter(io: SocketIOServer): void {
       })
       .catch((err) => {
         console.warn('[socket.io] Redis adapter unavailable, using in-memory:', err.message);
+        pubClient.disconnect();
+        subClient.disconnect();
       });
   } catch {
     // Redis not available — single-instance mode
@@ -149,10 +166,10 @@ app.prepare().then(() => {
       // Only broadcast if the socket is a member of the room (Fix #8)
       if (!socket.rooms.has(`conversation:${conversationId}`)) return;
 
-      socket.to(`conversation:${conversationId}`).emit('typing', {
-        userName,
-        isTyping,
-      });
+      const room = `conversation:${conversationId}`;
+      socket.to(room).emit('typing', { userName, isTyping });
+      // Also relay to public-chat namespace so the lead sees agent typing
+      io.of('/public-chat').to(room).emit('typing', { userName, isTyping });
     });
 
     socket.on('disconnect', (reason: string) => {
@@ -198,6 +215,13 @@ app.prepare().then(() => {
     console.log(`[socket.io] public-chat connected: ${socket.id} (conversation: ${conversationId})`);
 
     socket.join(`conversation:${conversationId}`);
+
+    socket.on('typing', ({ userName, isTyping }: { userName: string; isTyping: boolean }) => {
+      const room = `conversation:${conversationId}`;
+      socket.to(room).emit('typing', { userName, isTyping });
+      // Also relay to default namespace so the agent sees lead typing
+      io.to(room).emit('typing', { userName, isTyping });
+    });
 
     socket.on('disconnect', (reason: string) => {
       console.log(`[socket.io] public-chat disconnected: ${socket.id} (${reason})`);

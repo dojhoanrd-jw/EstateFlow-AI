@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import type { ConversationWithLead } from '@/shared/types';
+import { API_ROUTES } from '@/shared/routes/api.routes';
+import { apiPost } from '@/frontend/lib/fetcher';
 import { useCurrentUser } from '@/frontend/features/auth/hooks/use-auth';
 import { useConversations, type ConversationFilters } from './use-conversations';
 import { useMessages } from './use-messages';
@@ -89,6 +91,14 @@ export function useConversationPage() {
     setFilters(newFilters);
   }, []);
 
+  const handleClaimConversation = useCallback(async () => {
+    if (!selectedConversationId) return;
+    await apiPost(API_ROUTES.conversations.claim(selectedConversationId));
+    await mutateConversations();
+  }, [selectedConversationId, mutateConversations]);
+
+  const isUnassigned = selectedConversation?.assigned_agent_id === null;
+
   return {
     selectedConversationId,
     mobileView: mobile.mobileView,
@@ -103,6 +113,7 @@ export function useConversationPage() {
     isConnected,
     selectedConversation,
     typingUsers,
+    isUnassigned,
     retryConversations: mutateConversations,
     handleSelectConversation,
     handleBackToList: mobile.handleBackToList,
@@ -112,5 +123,6 @@ export function useConversationPage() {
     handleSendMessage,
     handleTyping,
     handleFilterChange,
+    handleClaimConversation,
   };
 }
