@@ -95,6 +95,6 @@ jobs:
             --add-cloudsql-instances=${{ env.PROJECT_ID }}:${{ env.REGION }}:estateflow-db \
             --vpc-connector=estateflow-vpc \
             --session-affinity \
-            --set-secrets="DATABASE_URL=DATABASE_URL:latest,NEXTAUTH_SECRET=NEXTAUTH_SECRET:latest" \
-            --set-env-vars="NODE_ENV=production,AI_SERVICE_URL=${{ steps.ai-url.outputs.url }},REDIS_URL=redis://10.97.26.235:6379,NEXTAUTH_URL=https://estateflow-web-$(echo ${{ env.PROJECT_ID }} | tr -d '-').run.app" \
+            --set-secrets="DATABASE_URL=DATABASE_URL:latest,NEXTAUTH_SECRET=NEXTAUTH_SECRET:latest,AUTH_SECRET=NEXTAUTH_SECRET:latest" \
+            --set-env-vars="NODE_ENV=production,AI_SERVICE_URL=${{ steps.ai-url.outputs.url }},REDIS_URL=redis://10.97.26.235:6379" \
             --allow-unauthenticated
