@@ -160,6 +160,50 @@ app.prepare().then(() => {
     });
   });
 
+  // --- Public chat namespace (auth via chat_token, no cookies) ---
+  const publicChat = io.of('/public-chat');
+
+  publicChat.use(async (socket, next) => {
+    try {
+      const token =
+        (socket.handshake.auth as Record<string, unknown>)?.chat_token ??
+        socket.handshake.query?.chat_token;
+
+      if (!token || typeof token !== 'string') {
+        return next(new Error('Missing chat_token'));
+      }
+
+      const row = await db.queryOne<{ id: string; lead_id: string }>(
+        "SELECT id, lead_id FROM conversations WHERE chat_token = $1 AND status != 'archived' LIMIT 1",
+        [token],
+      );
+
+      if (!row) {
+        return next(new Error('Invalid or expired chat token'));
+      }
+
+      socket.data.conversationId = row.id;
+      socket.data.leadId = row.lead_id;
+      socket.data.chatToken = token;
+
+      next();
+    } catch (err) {
+      console.error('[socket.io] Public chat auth error:', err);
+      next(new Error('Authentication failed'));
+    }
+  });
+
+  publicChat.on('connection', (socket) => {
+    const { conversationId } = socket.data as { conversationId: string };
+    console.log(`[socket.io] public-chat connected: ${socket.id} (conversation: ${conversationId})`);
+
+    socket.join(`conversation:${conversationId}`);
+
+    socket.on('disconnect', (reason: string) => {
+      console.log(`[socket.io] public-chat disconnected: ${socket.id} (${reason})`);
+    });
+  });
+
   httpServer.listen(port, hostname, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
   });

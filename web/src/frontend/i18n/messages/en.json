@@ -12,7 +12,8 @@
     "errorInvalid": "Invalid email or password. Please try again.",
     "errorTooMany": "Too many failed attempts. Please wait 30 seconds.",
     "errorTooManyWait": "Too many attempts. Please wait {seconds}s.",
-    "errorGeneric": "Something went wrong. Please try again later."
+    "errorGeneric": "Something went wrong. Please try again later.",
+    "togglePassword": "Toggle password visibility"
   },
   "authLayout": {
     "heroTitle1": "Manage your",
@@ -92,6 +93,8 @@
     "typeMessage": "Type a message...",
     "selectToChat": "Select a conversation to start chatting",
     "sendHint": "Press Enter to send, Shift+Enter for new line",
+    "attachImage": "Attach image",
+    "removeImage": "Remove image",
     "leadInfo": "Lead Info",
     "leadDetails": "Lead details",
     "leadDetailsDesc": "Select a conversation to view lead information.",

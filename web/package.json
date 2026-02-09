@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "tsx server.ts",
     "lint": "next lint",
-    "db:migrate": "node src/backend/server/db/migrate.js",
-    "db:seed": "tsx src/backend/server/db/seed.ts"
+    "db:migrate": "node-pg-migrate up --migrations-dir migrations",
+    "db:migrate:down": "node-pg-migrate down --migrations-dir migrations",
+    "db:migrate:create": "node-pg-migrate create --migrations-dir migrations"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -22,6 +23,7 @@
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.25",
     "next-intl": "^4.8.2",
+    "node-pg-migrate": "^8.0.4",
     "pg": "^8.13.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

@@ -12,7 +12,8 @@
     "errorInvalid": "Correo o contraseña incorrectos. Intenta de nuevo.",
     "errorTooMany": "Demasiados intentos fallidos. Espera 30 segundos.",
     "errorTooManyWait": "Demasiados intentos. Espera {seconds}s.",
-    "errorGeneric": "Algo salió mal. Intenta de nuevo más tarde."
+    "errorGeneric": "Algo salió mal. Intenta de nuevo más tarde.",
+    "togglePassword": "Mostrar/ocultar contraseña"
   },
   "authLayout": {
     "heroTitle1": "Gestiona tus",
@@ -92,6 +93,8 @@
     "typeMessage": "Escribe un mensaje...",
     "selectToChat": "Selecciona una conversación para empezar a chatear",
     "sendHint": "Enter para enviar, Shift+Enter para nueva línea",
+    "attachImage": "Adjuntar imagen",
+    "removeImage": "Quitar imagen",
     "leadInfo": "Info del lead",
     "leadDetails": "Detalles del lead",
     "leadDetailsDesc": "Selecciona una conversación para ver la información del lead.",

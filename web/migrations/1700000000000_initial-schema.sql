@@ -1,23 +1,18 @@
+-- Up Migration
 -- EstateFlow AI — Initial Schema
 -- PostgreSQL 16 + pgvector
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "vector";
 
--- ============================================
--- ENUMS
--- ============================================
-
+-- Enums
 CREATE TYPE user_role AS ENUM ('admin', 'agent');
 CREATE TYPE conversation_priority AS ENUM ('high', 'medium', 'low');
 CREATE TYPE conversation_status AS ENUM ('active', 'archived');
 CREATE TYPE message_sender_type AS ENUM ('agent', 'lead');
 CREATE TYPE message_content_type AS ENUM ('text', 'image');
 
--- ============================================
--- USERS
--- ============================================
-
+-- Users
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(120) NOT NULL,
@@ -33,10 +28,7 @@ CREATE TABLE users (
 -- email already has a unique B-tree index from the UNIQUE constraint
 CREATE INDEX idx_users_role ON users (role);
 
--- ============================================
--- LEADS
--- ============================================
-
+-- Leads
 CREATE TABLE leads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(120) NOT NULL,
@@ -54,14 +46,12 @@ CREATE TABLE leads (
 CREATE INDEX idx_leads_assigned_agent ON leads (assigned_agent_id);
 CREATE INDEX idx_leads_project ON leads (project_interest);
 
--- ============================================
--- CONVERSATIONS
--- ============================================
-
+-- Conversations
 CREATE TABLE conversations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
-    assigned_agent_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    assigned_agent_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    chat_token UUID UNIQUE DEFAULT NULL,
     status conversation_status NOT NULL DEFAULT 'active',
     ai_summary TEXT,
     ai_priority conversation_priority DEFAULT 'medium',
@@ -78,11 +68,10 @@ CREATE INDEX idx_conversations_priority ON conversations (ai_priority);
 CREATE INDEX idx_conversations_status ON conversations (status);
 CREATE INDEX idx_conversations_last_msg ON conversations (last_message_at DESC);
 CREATE INDEX idx_conversations_tags ON conversations USING GIN (ai_tags);
+CREATE UNIQUE INDEX idx_conversations_chat_token ON conversations (chat_token) WHERE chat_token IS NOT NULL;
+CREATE INDEX idx_conversations_unassigned ON conversations (status, last_message_at DESC) WHERE assigned_agent_id IS NULL;
 
--- ============================================
--- MESSAGES
--- ============================================
-
+-- Messages
 CREATE TABLE messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
@@ -98,10 +87,7 @@ CREATE INDEX idx_messages_conversation ON messages (conversation_id);
 CREATE INDEX idx_messages_created ON messages (conversation_id, created_at ASC);
 CREATE INDEX idx_messages_unread ON messages (conversation_id, is_read) WHERE is_read = false;
 
--- ============================================
--- VECTOR EMBEDDINGS (for RAG)
--- ============================================
-
+-- Vector Embeddings (for RAG)
 CREATE TABLE project_embeddings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_name VARCHAR(255) NOT NULL,
@@ -113,10 +99,7 @@ CREATE TABLE project_embeddings (
 
 CREATE INDEX idx_embeddings_project ON project_embeddings (project_name);
 
--- ============================================
--- FUNCTION: Auto-update updated_at
--- ============================================
-
+-- Auto-update updated_at trigger
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -133,3 +116,20 @@ CREATE TRIGGER trg_leads_updated_at
 
 CREATE TRIGGER trg_conversations_updated_at
     BEFORE UPDATE ON conversations FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Down Migration
+
+DROP TRIGGER IF EXISTS trg_conversations_updated_at ON conversations;
+DROP TRIGGER IF EXISTS trg_leads_updated_at ON leads;
+DROP TRIGGER IF EXISTS trg_users_updated_at ON users;
+DROP FUNCTION IF EXISTS update_updated_at();
+DROP TABLE IF EXISTS project_embeddings;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS conversations;
+DROP TABLE IF EXISTS leads;
+DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS message_content_type;
+DROP TYPE IF EXISTS message_sender_type;
+DROP TYPE IF EXISTS conversation_status;
+DROP TYPE IF EXISTS conversation_priority;
+DROP TYPE IF EXISTS user_role;
