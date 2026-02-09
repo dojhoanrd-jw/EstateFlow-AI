@@ -20,7 +20,7 @@ async function canAccessConversation(
   if (role === 'admin') return true;
 
   const row = await db.queryOne<{ id: string }>(
-    'SELECT id FROM conversations WHERE id = $1 AND assigned_agent_id = $2 LIMIT 1',
+    'SELECT id FROM conversations WHERE id = $1 AND (assigned_agent_id = $2 OR chat_token IS NOT NULL) LIMIT 1',
     [conversationId, userId],
   );
   return row !== null;

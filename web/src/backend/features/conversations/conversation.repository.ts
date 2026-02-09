@@ -99,6 +99,7 @@ function buildListQuery(
     conditions.push(`(c.assigned_agent_id = $${paramIndex++} OR c.assigned_agent_id IS NULL)`);
     params.push(agentId);
   }
+  // admin (agentId=null) with 'mine' or 'all': no agent filter → sees everything
 
   conditions.push(`c.status = $${paramIndex++}`);
   params.push(filters.status);
