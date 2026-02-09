@@ -77,6 +77,9 @@
     "hideInfo": "Ocultar info",
     "showInfo": "Ver info",
     "searchPlaceholder": "Buscar conversaciones...",
+    "assignmentMine": "Mis chats",
+    "assignmentUnassigned": "Sin asignar",
+    "assignmentAll": "Todos los chats",
     "allPriorities": "Todas las prioridades",
     "highPriority": "Prioridad alta",
     "mediumPriority": "Prioridad media",
@@ -113,7 +116,9 @@
     "mediumPriorityLabel": "Prioridad media",
     "mediumPriorityDesc": "Seguimiento dentro de 24 horas",
     "lowPriorityLabel": "Prioridad baja",
-    "lowPriorityDesc": "Puede atenderse a ritmo normal"
+    "lowPriorityDesc": "Puede atenderse a ritmo normal",
+    "unassignedHint": "Esta conversación aún no tiene agente asignado.",
+    "claimConversation": "Tomar conversación"
   },
   "common": {
     "retry": "Reintentar",
@@ -132,5 +137,26 @@
     "priorityHigh": "Alta",
     "priorityMedium": "Media",
     "priorityLow": "Baja"
+  },
+  "publicChat": {
+    "title": "Chatea con nosotros",
+    "subtitle": "Inicia una conversación con nuestro equipo inmobiliario",
+    "nameLabel": "Tu nombre",
+    "namePlaceholder": "Juan Pérez",
+    "emailLabel": "Correo (opcional)",
+    "phoneLabel": "Teléfono (opcional)",
+    "projectLabel": "Proyecto de interés (opcional)",
+    "messageLabel": "Tu mensaje",
+    "messagePlaceholder": "Hola, me interesa...",
+    "startChat": "Iniciar chat",
+    "starting": "Iniciando...",
+    "typeMessage": "Escribe un mensaje...",
+    "send": "Enviar",
+    "sendHint": "Enter para enviar, Shift+Enter para nueva línea",
+    "connecting": "Conectando...",
+    "connected": "Conectado",
+    "waitingAgent": "Un agente te atenderá pronto",
+    "typing": "{name} está escribiendo...",
+    "errorGeneric": "Algo salió mal. Intenta de nuevo."
   }
 }

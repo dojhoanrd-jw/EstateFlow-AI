@@ -149,10 +149,10 @@ app.prepare().then(() => {
       // Only broadcast if the socket is a member of the room (Fix #8)
       if (!socket.rooms.has(`conversation:${conversationId}`)) return;
 
-      socket.to(`conversation:${conversationId}`).emit('typing', {
-        userName,
-        isTyping,
-      });
+      const room = `conversation:${conversationId}`;
+      socket.to(room).emit('typing', { userName, isTyping });
+      // Also relay to public-chat namespace so the lead sees agent typing
+      io.of('/public-chat').to(room).emit('typing', { userName, isTyping });
     });
 
     socket.on('disconnect', (reason: string) => {
@@ -198,6 +198,13 @@ app.prepare().then(() => {
     console.log(`[socket.io] public-chat connected: ${socket.id} (conversation: ${conversationId})`);
 
     socket.join(`conversation:${conversationId}`);
+
+    socket.on('typing', ({ userName, isTyping }: { userName: string; isTyping: boolean }) => {
+      const room = `conversation:${conversationId}`;
+      socket.to(room).emit('typing', { userName, isTyping });
+      // Also relay to default namespace so the agent sees lead typing
+      io.to(room).emit('typing', { userName, isTyping });
+    });
 
     socket.on('disconnect', (reason: string) => {
       console.log(`[socket.io] public-chat disconnected: ${socket.id} (${reason})`);

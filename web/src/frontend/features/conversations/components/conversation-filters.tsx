@@ -13,6 +13,7 @@ export interface ConversationFilterValues {
   priority?: ConversationPriority;
   tag?: string;
   search?: string;
+  assignment?: 'mine' | 'unassigned' | 'all';
 }
 
 interface ConversationFiltersProps {
@@ -31,6 +32,12 @@ export function ConversationFilters({
   const t = useTranslations('conversations');
   const { locale } = useLocale();
   const [searchInput, setSearchInput] = useState(value.search ?? '');
+
+  const assignmentOptions = useMemo(() => [
+    { value: 'mine', label: t('assignmentMine') },
+    { value: 'unassigned', label: t('assignmentUnassigned') },
+    { value: 'all', label: t('assignmentAll') },
+  ], [t]);
 
   const priorityOptions = useMemo(() => [
     { value: '', label: t('allPriorities') },
@@ -54,6 +61,17 @@ export function ConversationFilters({
       })),
     ];
   }, [conversations, t, locale]);
+
+  const handleAssignmentChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const assignment = e.target.value as 'mine' | 'unassigned' | 'all';
+      onChange({
+        ...value,
+        assignment,
+      });
+    },
+    [value, onChange],
+  );
 
   const handlePriorityChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -132,6 +150,14 @@ export function ConversationFilters({
       </div>
 
       <div className="flex gap-2">
+        <div className="flex-1 min-w-0">
+          <Select
+            options={assignmentOptions}
+            value={value.assignment ?? 'mine'}
+            onChange={handleAssignmentChange}
+            className="!h-8 !rounded-md text-[11px] !pl-2.5 !pr-7"
+          />
+        </div>
         <div className="flex-1 min-w-0">
           <Select
             options={priorityOptions}

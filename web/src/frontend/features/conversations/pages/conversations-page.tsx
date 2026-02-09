@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, PanelRightOpen, PanelRightClose, WifiOff } from 'lucide-react';
+import { ArrowLeft, PanelRightOpen, PanelRightClose, WifiOff, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/frontend/components/ui/button';
 import { cn } from '@/frontend/lib/utils';
 import { ErrorState } from '@/frontend/components/ui/error-state';
 import { useConversationPage } from '../hooks/use-conversation-page';
@@ -39,7 +41,11 @@ export function ConversationsPage() {
     handleSendMessage,
     handleTyping,
     handleFilterChange,
+    handleClaimConversation,
+    isUnassigned,
   } = useConversationPage();
+
+  const [claiming, setClaiming] = useState(false);
 
   if (conversationsError) {
     return (
@@ -152,11 +158,32 @@ export function ConversationsPage() {
           conversationId={selectedConversationId}
         />
 
-        <MessageComposer
-          onSend={handleSendMessage}
-          onTyping={handleTyping}
-          disabled={!selectedConversationId}
-        />
+        {isUnassigned && selectedConversationId ? (
+          <div className="shrink-0 border-t border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-4">
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-xs text-[var(--color-text-tertiary)]">
+                {t('unassignedHint')}
+              </p>
+              <Button
+                size="md"
+                loading={claiming}
+                onClick={async () => {
+                  setClaiming(true);
+                  try { await handleClaimConversation(); } finally { setClaiming(false); }
+                }}
+              >
+                <UserPlus size={16} />
+                {t('claimConversation')}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <MessageComposer
+            onSend={handleSendMessage}
+            onTyping={handleTyping}
+            disabled={!selectedConversationId}
+          />
+        )}
       </div>
 
       {showInfoPanel && (

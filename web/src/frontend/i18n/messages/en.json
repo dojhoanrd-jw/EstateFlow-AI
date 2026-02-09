@@ -77,6 +77,9 @@
     "hideInfo": "Hide info",
     "showInfo": "Show info",
     "searchPlaceholder": "Search conversations...",
+    "assignmentMine": "My chats",
+    "assignmentUnassigned": "Unassigned",
+    "assignmentAll": "All chats",
     "allPriorities": "All priorities",
     "highPriority": "High priority",
     "mediumPriority": "Medium priority",
@@ -113,7 +116,9 @@
     "mediumPriorityLabel": "Medium Priority",
     "mediumPriorityDesc": "Follow up within 24 hours",
     "lowPriorityLabel": "Low Priority",
-    "lowPriorityDesc": "Can be addressed at regular pace"
+    "lowPriorityDesc": "Can be addressed at regular pace",
+    "unassignedHint": "This conversation has no agent assigned yet.",
+    "claimConversation": "Claim conversation"
   },
   "common": {
     "retry": "Retry",
@@ -132,5 +137,26 @@
     "priorityHigh": "High",
     "priorityMedium": "Medium",
     "priorityLow": "Low"
+  },
+  "publicChat": {
+    "title": "Chat with us",
+    "subtitle": "Start a conversation with our real estate team",
+    "nameLabel": "Your name",
+    "namePlaceholder": "John Doe",
+    "emailLabel": "Email (optional)",
+    "phoneLabel": "Phone (optional)",
+    "projectLabel": "Project of interest (optional)",
+    "messageLabel": "Your message",
+    "messagePlaceholder": "Hi, I'm interested in...",
+    "startChat": "Start chat",
+    "starting": "Starting...",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "sendHint": "Enter to send, Shift+Enter for new line",
+    "connecting": "Connecting...",
+    "connected": "Connected",
+    "waitingAgent": "An agent will respond shortly",
+    "typing": "{name} is typing...",
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }

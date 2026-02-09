@@ -11,6 +11,7 @@ export const API_ROUTES = {
     list: `${API_BASE}/conversations`,
     detail: (id: string) => `${API_BASE}/conversations/${id}`,
     messages: (id: string) => `${API_BASE}/conversations/${id}/messages`,
+    claim: (id: string) => `${API_BASE}/conversations/${id}/claim`,
   },
 
   leads: {
