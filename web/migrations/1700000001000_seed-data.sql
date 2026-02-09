@@ -10,7 +10,8 @@ INSERT INTO users (id, name, email, password_hash, role, avatar_url) VALUES
     ('a2000000-0000-0000-0000-000000000002', 'María García', 'maria@estateflow.com',
      '$2a$12$nFTjbZ3MGpDaBlKH.I21MeglDFoNIGZZv4mOddlGa6Z6P.8sKwnFa', 'agent', NULL),
     ('a3000000-0000-0000-0000-000000000003', 'Pedro Ruiz', 'pedro@estateflow.com',
-     '$2a$12$nFTjbZ3MGpDaBlKH.I21MeglDFoNIGZZv4mOddlGa6Z6P.8sKwnFa', 'agent', NULL);
+     '$2a$12$nFTjbZ3MGpDaBlKH.I21MeglDFoNIGZZv4mOddlGa6Z6P.8sKwnFa', 'agent', NULL)
+ON CONFLICT (id) DO NOTHING;
 
 -- Leads (8 leads with varied profiles)
 INSERT INTO leads (id, name, email, phone, project_interest, source, budget, notes, assigned_agent_id) VALUES
@@ -29,7 +30,8 @@ INSERT INTO leads (id, name, email, phone, project_interest, source, budget, not
     ('b7000000-0000-0000-0000-000000000007', 'Fernando Ruiz', 'fer.ruiz@gmail.com', '+52 55 7890 1234',
      'Lomas Verdes', 'Referido', 4200000.00, 'Comparando con proyecto de la competencia', 'a2000000-0000-0000-0000-000000000002'),
     ('b8000000-0000-0000-0000-000000000008', 'Carmen Vega', 'carmen.v@gmail.com', '+52 55 8901 2345',
-     'Residencial del Parque', 'Facebook Ads', 1800000.00, 'Solo explorando opciones, sin urgencia', 'a3000000-0000-0000-0000-000000000003');
+     'Residencial del Parque', 'Facebook Ads', 1800000.00, 'Solo explorando opciones, sin urgencia', 'a3000000-0000-0000-0000-000000000003')
+ON CONFLICT (id) DO NOTHING;
 
 -- Conversations
 -- HIGH priority
@@ -69,9 +71,13 @@ INSERT INTO conversations (id, lead_id, assigned_agent_id, status, ai_summary, a
     ('c8000000-0000-0000-0000-000000000008', 'b8000000-0000-0000-0000-000000000008', 'a3000000-0000-0000-0000-000000000003',
      'active',
      'Lead en etapa exploratoria. Solo quiere información general. Sin proyecto definido ni urgencia. Requiere seguimiento a largo plazo.',
-     'low', ARRAY['early-stage', 'follow-up'], false, NOW() - INTERVAL '2 days');
+     'low', ARRAY['early-stage', 'follow-up'], false, NOW() - INTERVAL '2 days')
+ON CONFLICT (id) DO NOTHING;
 
 -- Messages (realistic real estate conversations)
+-- Only insert if no messages exist yet (messages use auto-generated IDs)
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM messages LIMIT 1) THEN
 
 -- Conversation 1: Juan Pérez <-> María García (HOT LEAD)
 INSERT INTO messages (conversation_id, sender_type, sender_id, content, created_at) VALUES
@@ -195,6 +201,9 @@ INSERT INTO messages (conversation_id, sender_type, sender_id, content, created_
     ('c8000000-0000-0000-0000-000000000008', 'lead', 'b8000000-0000-0000-0000-000000000008',
      'No sé, realmente solo estoy viendo opciones para el futuro. Tal vez en 6 meses o un año.',
      NOW() - INTERVAL '2 days');
+
+END IF;
+END $$;
 
 -- Down Migration
 
