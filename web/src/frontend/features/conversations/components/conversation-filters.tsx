@@ -105,16 +105,11 @@ export function ConversationFilters({
   }, [value, onChange, searchInput]);
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-2 sm:flex-row sm:items-end',
-        className,
-      )}
-    >
-      <div className="relative flex-1">
+    <div className={cn('flex flex-col gap-2', className)}>
+      <div className="relative">
         <Search
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-          size={15}
+          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+          size={14}
         />
         <input
           type="text"
@@ -125,7 +120,7 @@ export function ConversationFilters({
           onKeyDown={handleSearchKeyDown}
           onBlur={handleSearchBlur}
           className={cn(
-            'h-9 w-full rounded-lg border pl-9 pr-3 text-xs',
+            'h-8 w-full rounded-md border pl-8 pr-3 text-xs',
             'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
             'placeholder:text-[var(--color-text-tertiary)]',
             'border-[var(--color-border-default)]',
@@ -136,22 +131,23 @@ export function ConversationFilters({
         />
       </div>
 
-      <div className="w-full sm:w-36">
-        <Select
-          options={priorityOptions}
-          value={value.priority ?? ''}
-          onChange={handlePriorityChange}
-          className="!h-9 text-xs"
-        />
-      </div>
-
-      <div className="w-full sm:w-32">
-        <Select
-          options={tagOptions}
-          value={value.tag ?? ''}
-          onChange={handleTagChange}
-          className="!h-9 text-xs"
-        />
+      <div className="flex gap-2">
+        <div className="flex-1 min-w-0">
+          <Select
+            options={priorityOptions}
+            value={value.priority ?? ''}
+            onChange={handlePriorityChange}
+            className="!h-8 !rounded-md text-[11px] !pl-2.5 !pr-7"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <Select
+            options={tagOptions}
+            value={value.tag ?? ''}
+            onChange={handleTagChange}
+            className="!h-8 !rounded-md text-[11px] !pl-2.5 !pr-7"
+          />
+        </div>
       </div>
     </div>
   );
