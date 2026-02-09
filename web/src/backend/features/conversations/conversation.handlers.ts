@@ -15,6 +15,7 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
       tag: searchParams.get('tag') ?? undefined,
       status: searchParams.get('status') ?? undefined,
       search: searchParams.get('search') ?? undefined,
+      assignment: searchParams.get('assignment') ?? undefined,
       page: searchParams.get('page') ?? undefined,
       limit: searchParams.get('limit') ?? undefined,
     });

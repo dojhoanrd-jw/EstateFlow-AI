@@ -13,6 +13,7 @@ const UPDATABLE_COLUMNS: Record<keyof UpdateConversationInput, string> = {
   ai_summary: 'ai_summary',
   ai_priority: 'ai_priority',
   ai_tags: 'ai_tags',
+  assigned_agent_id: 'assigned_agent_id',
 };
 
 const SELECT_CONVERSATION_WITH_LEAD = `
@@ -20,6 +21,7 @@ const SELECT_CONVERSATION_WITH_LEAD = `
     c.id,
     c.lead_id,
     c.assigned_agent_id,
+    c.chat_token,
     c.status,
     c.ai_summary,
     c.ai_priority,
@@ -65,6 +67,13 @@ const SQL_INSERT = `
   RETURNING *
 `;
 
+const SQL_CLAIM = `
+  UPDATE conversations
+  SET assigned_agent_id = $2, updated_at = NOW()
+  WHERE id = $1 AND assigned_agent_id IS NULL
+  RETURNING *
+`;
+
 interface QueryBuilderResult {
   text: string;
   params: unknown[];
@@ -79,8 +88,15 @@ function buildListQuery(
   const params: unknown[] = [];
   let paramIndex = 1;
 
-  if (agentId) {
+  const assignment = filters.assignment ?? 'mine';
+
+  if (assignment === 'mine' && agentId) {
     conditions.push(`c.assigned_agent_id = $${paramIndex++}`);
+    params.push(agentId);
+  } else if (assignment === 'unassigned') {
+    conditions.push(`c.assigned_agent_id IS NULL`);
+  } else if (assignment === 'all' && agentId) {
+    conditions.push(`(c.assigned_agent_id = $${paramIndex++} OR c.assigned_agent_id IS NULL)`);
     params.push(agentId);
   }
 
@@ -177,6 +193,13 @@ export const conversationRepository = {
     const query = buildUpdateQuery('conversations', id, data, UPDATABLE_COLUMNS);
     if (!query) return this.findById(id) as Promise<Conversation | null>;
     return db.queryOne<Conversation>(query.text, query.params);
+  },
+
+  async claimConversation(
+    conversationId: string,
+    agentId: string,
+  ): Promise<Conversation | null> {
+    return db.queryOne<Conversation>(SQL_CLAIM, [conversationId, agentId]);
   },
 
   async countByFilters(
