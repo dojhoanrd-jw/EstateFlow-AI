@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "text-embedding-3-small"
     LLM_MAX_RETRIES: int = 3
 
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/estateflow"
+    DATABASE_URL: str
 
     RAG_CHUNK_SIZE: int = 600
     RAG_CHUNK_OVERLAP: int = 100
